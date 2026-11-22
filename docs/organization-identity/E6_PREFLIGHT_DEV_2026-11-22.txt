@@ -1,0 +1,26 @@
+E6 cutover preflight — dev database (kcic_connect, container kcic-postgres)
+Date: 2026-11-22
+Command: tools/preflight/run-e6-preflight.sh
+Result: BLOCKED (7 violations across 2 blocker checks)
+
+E6-01 unlinked accounts (users.employee_id IS NULL): 5 — FAIL
+  admin, auditor1, employee1, employee2, employee3
+
+E6-02 employees without exactly one active placement: 0 — PASS
+E6-03 duplicate NIP or email: 0 — PASS
+E6-04 active placements on invalid/non-DIVISION units: 0 — PASS
+E6-05 active units without unit_type: 2 — FAIL
+  KCIC-HO (Head Office), KCIC-OPS (Operations)
+E6-06 hierarchy shape violations: 0 — PASS
+
+E6-GATE: BLOCKED (7 violations)
+
+Descendant widening review: 0 rows with include_descendants in
+authorization.resource_permissions and authorization.user_role_assignments.
+
+Interpretation: V18 (NOT NULL cutover on users.employee_id and
+organization_units.unit_type) must not be applied. The five unlinked accounts are
+legacy/bootstrap/dev accounts without verified HR identity, and the two active
+units have no approved unit-type mapping (blockers B-1/B-2/B-3). Clearing them
+requires verified HR data, unit-type mapping, and an approved bootstrap/system
+account exception — none of which may be fabricated by engineering.

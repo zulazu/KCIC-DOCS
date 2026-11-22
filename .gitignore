@@ -1,0 +1,38 @@
+# Build output
+backend/target/
+frontend/dist/
+frontend/node_modules/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+
+# Local tooling (downloaded Maven, not part of the product)
+tools/apache-maven-*/
+
+# Environment and secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Local runtime artifacts: DB dumps, storage objects, gate logs
+.local/
+*.log
+.playwright-mcp/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local runtime data
+tmp/
+logs/
+backups/
+storage-data/
+postgres-data/
+minio-data/

@@ -1,0 +1,31 @@
+== 1. unlinked accounts (V18 worklist) ==
+               user_id                | username  |    display_name    |    account_email     |    legacy_units     |          created_at           
+--------------------------------------+-----------+--------------------+----------------------+---------------------+-------------------------------
+ fc58cc1c-1694-4151-8c6f-50d1a376ac5e | admin     | KCIC Administrator | admin@kcic.local     |                     | 2026-11-22 07:26:49.898998+00
+ d1e552e6-b757-4a8d-9d79-79a9eef598d5 | auditor1  | Auditor Satu       |                      |                     | 2026-11-22 10:49:50.65394+00
+ bdacddb3-259a-45d7-beb8-1928e3a4821a | employee1 | Employee One       | employee1@kcic.local | KCIC-HO (PRIMARY)   | 2026-11-22 07:27:25.322075+00
+ f608a381-6083-4aba-b12d-29b4e09f54c5 | employee2 | Employee Two       |                      |                     | 2026-11-22 07:27:38.753052+00
+ 0c8839af-ac84-4966-a6ab-83a6afc46239 | employee3 | Employee Three     |                      | KCIC-HO (SECONDARY) | 2026-11-22 10:13:05.49049+00
+(5 rows)
+
+== 2. Employee master rows already available for linking ==
+             employee_id              |     nip     |     full_name     |         email          | employment_status | linked_username 
+--------------------------------------+-------------+-------------------+------------------------+-------------------+-----------------
+ 426dc1d8-0ca7-4d35-8fd2-f59ff629f695 | UAT-NIP-001 | UAT Employee Biro | uat.employee@kcic.test | ACTIVE            | uat.biro
+(1 row)
+
+== 3. automatic email/username candidates (still require HR confirmation) ==
+ username | account_email | nip | full_name | employee_email 
+----------+---------------+-----+-----------+----------------
+(0 rows)
+
+== 4. HR mapping template (fill confirmed_nip etc.; do not infer) ==
+ username  | account_display_name |    account_email     | confirmed_nip | hr_full_name | hr_official_email | employment_status | division_unit_code | hr_decision_note 
+-----------+----------------------+----------------------+---------------+--------------+-------------------+-------------------+--------------------+------------------
+ admin     | KCIC Administrator   | admin@kcic.local     |               |              |                   |                   |                    | 
+ auditor1  | Auditor Satu         |                      |               |              |                   |                   |                    | 
+ employee1 | Employee One         | employee1@kcic.local |               |              |                   |                   |                    | 
+ employee2 | Employee Two         |                      |               |              |                   |                   |                    | 
+ employee3 | Employee Three       |                      |               |              |                   |                   |                    | 
+(5 rows)
+

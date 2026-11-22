@@ -1,0 +1,130 @@
+## template (expected FAIL)
+== input ==
+CREATE TABLE
+COPY 2
+ staged_rows 
+-------------
+           2
+(1 row)
+
+== E6-HR-00 the extract must contain at least one data row ==
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-00   | BLOCKER  |          0
+(1 row)
+
+== E6-HR-08 identity keys must not carry leading/trailing whitespace ==
+ nip | division_unit_code 
+-----+--------------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-08   | BLOCKER  |          0
+(1 row)
+
+== E6-HR-01 rows that are blank or still contain <placeholders> ==
+    nip    |    full_name     |         email         | employment_status | division_unit_code 
+-----------+------------------+-----------------------+-------------------+--------------------
+ <NIP-001> | <NAMA LENGKAP 1> | <email1@contoh.co.id> | ACTIVE            | <KODE-DIVISI>
+ <NIP-002> | <NAMA LENGKAP 2> | <email2@contoh.co.id> | ACTIVE            | <KODE-DIVISI>
+(2 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-01   | BLOCKER  |          2
+(1 row)
+
+== E6-HR-02 invalid employment_status (ACTIVE|INACTIVE|TERMINATED) ==
+ nip | employment_status 
+-----+-------------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-02   | BLOCKER  |          0
+(1 row)
+
+== E6-HR-03 malformed email ==
+    nip    |         email         
+-----------+-----------------------
+ <NIP-001> | <email1@contoh.co.id>
+ <NIP-002> | <email2@contoh.co.id>
+(2 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-03   | BLOCKER  |          2
+(1 row)
+
+== E6-HR-04 duplicate NIP/email inside the file ==
+ field | value | occurrences 
+-------+-------+-------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-04   | BLOCKER  |          0
+(1 row)
+
+== E6-HR-05 division codes missing, inactive, or not DIVISION ==
+    nip    | division_unit_code | matched_code | unit_type | unit_status 
+-----------+--------------------+--------------+-----------+-------------
+ <NIP-001> | <KODE-DIVISI>      |              |           | 
+ <NIP-002> | <KODE-DIVISI>      |              |           | 
+(2 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-05   | BLOCKER  |          2
+(1 row)
+
+== E6-HR-06 conflicts with existing employees (review before upsert) ==
+ csv_nip | existing_nip | csv_name | existing_name | csv_email | existing_email | note 
+---------+--------------+----------+---------------+-----------+----------------+------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-06   | WARN     |          0
+(1 row)
+
+== E6-HR-07 email used by a different existing employee ==
+ csv_nip | existing_nip | email 
+---------+--------------+-------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-HR-07   | BLOCKER  |          0
+(1 row)
+
+== E6-HR-GATE summary (import may proceed only when PASS) ==
+ check_code | severity | violations | result 
+------------+----------+------------+--------
+ E6-HR-00   | BLOCKER  |          0 | PASS
+ E6-HR-08   | BLOCKER  |          0 | PASS
+ E6-HR-01   | BLOCKER  |          2 | FAIL
+ E6-HR-02   | BLOCKER  |          0 | PASS
+ E6-HR-03   | BLOCKER  |          2 | FAIL
+ E6-HR-04   | BLOCKER  |          0 | PASS
+ E6-HR-05   | BLOCKER  |          2 | FAIL
+ E6-HR-06   | WARN     |          0 | PASS
+ E6-HR-07   | BLOCKER  |          0 | PASS
+ E6-HR-GATE | BLOCKER  |          6 | FAIL
+(10 rows)
+template_exit=1
+
+## reordered header (expected exit 2)
+CSV header mismatch.
+expected: nip,full_name,email,employment_status,division_unit_code
+found:    email,nip,full_name,employment_status,division_unit_code
+bad_header_exit=2
+
+## header only (expected E6-HR-00 FAIL)
+== E6-HR-00 the extract must contain at least one data row ==
+ E6-HR-00   | BLOCKER  |          1
+== E6-HR-GATE summary (import may proceed only when PASS) ==
+ E6-HR-00   | BLOCKER  |          1 | FAIL
+ E6-HR-GATE | BLOCKER  |          1 | FAIL
+empty_exit=1

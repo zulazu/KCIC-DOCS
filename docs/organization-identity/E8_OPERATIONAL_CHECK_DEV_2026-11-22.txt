@@ -1,0 +1,38 @@
+== E8-OPS-01 non-ACTIVE employees with an ACTIVE account (must be zero) ==
+ nip | full_name | employment_status | username | account_status 
+-----+-----------+-------------------+----------+----------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E8-OPS-01  | BLOCKER  |          0
+(1 row)
+
+== E8-OPS-02 non-ACTIVE employees still holding an active placement (review) ==
+ nip | full_name | employment_status | unit_code | valid_from 
+-----+-----------+-------------------+-----------+------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E8-OPS-02  | WARN     |          0
+(1 row)
+
+== E8-OPS-03 linked accounts with no employment row (review) ==
+ username | account_status 
+----------+----------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E8-OPS-03  | WARN     |          0
+(1 row)
+
+== E8-OPS-GATE summary (BLOCKED while E8-OPS-01 has violations) ==
+ check_code  | severity | violations | result 
+-------------+----------+------------+--------
+ E8-OPS-01   | BLOCKER  |          0 | PASS
+ E8-OPS-02   | WARN     |          0 | PASS
+ E8-OPS-03   | WARN     |          0 | PASS
+ E8-OPS-GATE | BLOCKER  |          0 | PASS
+(4 rows)

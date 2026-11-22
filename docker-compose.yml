@@ -1,0 +1,41 @@
+name: kcic-connect
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kcic-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kcic_connect}
+      POSTGRES_USER: ${POSTGRES_USER:-kcic}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kcic_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kcic} -d ${POSTGRES_DB:-kcic_connect}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  minio:
+    image: minio/minio:latest
+    container_name: kcic-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-kcic_minio_dev}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-kcic_minio_dev_password}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  postgres-data:
+  minio-data:

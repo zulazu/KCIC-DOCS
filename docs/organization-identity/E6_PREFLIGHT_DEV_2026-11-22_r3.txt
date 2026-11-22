@@ -1,0 +1,120 @@
+== E6-01 unlinked accounts (users.employee_id IS NULL) ==
+ username  | account_status |          created_at           
+-----------+----------------+-------------------------------
+ admin     | ACTIVE         | 2026-11-22 07:26:49.898998+00
+ auditor1  | ACTIVE         | 2026-11-22 10:49:50.65394+00
+ employee1 | ACTIVE         | 2026-11-22 07:27:25.322075+00
+ employee2 | ACTIVE         | 2026-11-22 07:27:38.753052+00
+ employee3 | ACTIVE         | 2026-11-22 10:13:05.49049+00
+(5 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-01      | BLOCKER  |          5
+(1 row)
+
+== E6-02 employees without exactly one active placement ==
+ nip | full_name | active_placements 
+-----+-----------+-------------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-02      | BLOCKER  |          0
+(1 row)
+
+== E6-03 duplicate NIP or email (defense in depth; unique indexes exist) ==
+ field | value | occurrences 
+-------+-------+-------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-03      | BLOCKER  |          0
+(1 row)
+
+== E6-04 active placements on missing, inactive, or non-DIVISION units ==
+ id | nip | unit_code | unit_type | unit_status 
+----+-----+-----------+-----------+-------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-04      | BLOCKER  |          0
+(1 row)
+
+== E6-05 active units without unit_type ==
+                  id                  | unit_code |  unit_name  | unit_status 
+--------------------------------------+-----------+-------------+-------------
+ cddbee4b-ba36-4636-8dc0-da6394887d54 | KCIC-HO   | Head Office | ACTIVE
+ 06e2d089-4b57-48ed-81cf-dfa68ca9849d | KCIC-OPS  | Operations  | ACTIVE
+(2 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-05      | BLOCKER  |          2
+(1 row)
+
+== E6-06 hierarchy shape violations ==
+ id | unit_code | unit_type | parent_id | parent_type 
+----+-----------+-----------+-----------+-------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-06      | BLOCKER  |          0
+(1 row)
+
+== E6-07 active COMPANY roots (must be exactly one) ==
+                  id                  | unit_code |   unit_name    | unit_status 
+--------------------------------------+-----------+----------------+-------------
+ 11a1d07c-8e64-409c-bc35-e930076f08b6 | UAT-CO    | UAT Perusahaan | ACTIVE
+(1 row)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-07      | BLOCKER  |          0
+(1 row)
+
+== E6-08 ACTIVE accounts linked to non-ACTIVE employees ==
+ username | account_status | nip | employment_status 
+----------+----------------+-----+-------------------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-08      | BLOCKER  |          0
+(1 row)
+
+== E6-09 employee master data quality (blank fields, placeholders, malformed email) ==
+ id | nip | full_name | email 
+----+-----+-----------+-------
+(0 rows)
+
+ check_code | severity | violations 
+------------+----------+------------
+ E6-09      | BLOCKER  |          0
+(1 row)
+
+== E6-GATE summary (BLOCKED while any BLOCKER has violations) ==
+ check_code | severity | violations | result  
+------------+----------+------------+---------
+ E6-01      | BLOCKER  |          5 | FAIL
+ E6-02      | BLOCKER  |          0 | PASS
+ E6-03      | BLOCKER  |          0 | PASS
+ E6-04      | BLOCKER  |          0 | PASS
+ E6-05      | BLOCKER  |          2 | FAIL
+ E6-06      | BLOCKER  |          0 | PASS
+ E6-07      | BLOCKER  |          0 | PASS
+ E6-08      | BLOCKER  |          0 | PASS
+ E6-09      | BLOCKER  |          0 | PASS
+ E6-GATE    | BLOCKER  |          7 | BLOCKED
+(10 rows)
+
+== E6-INFO descendant widening review (must be reviewed, not necessarily zero) ==
+        source         | include_descendants_rows 
+-----------------------+--------------------------
+ resource_permissions  |                        0
+ user_role_assignments |                        0
+(2 rows)
+
