@@ -203,17 +203,6 @@ export async function uploadVersion(
   });
 }
 
-export function saveBlob(blob: Blob, filename: string | null): void {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename ?? 'dokumen';
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 2000);
-}
-
 export function canPreviewInline(contentType: string | null): boolean {
   if (!contentType) {
     return false;

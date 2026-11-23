@@ -15,6 +15,9 @@ public interface OrganizationUnitRepository extends JpaRepository<OrganizationUn
 
     Optional<OrganizationUnit> findByUnitCodeIgnoreCase(String unitCode);
 
+    @Query("select u from OrganizationUnit u where lower(u.unitCode) in :codes")
+    List<OrganizationUnit> findByUnitCodeLowerIn(@Param("codes") Collection<String> lowerCaseCodes);
+
     @Query("select (count(u) > 0) from OrganizationUnit u where lower(u.unitCode) = lower(:code)")
     boolean existsByUnitCodeIgnoreCase(String code);
 

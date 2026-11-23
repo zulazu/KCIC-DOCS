@@ -1,4 +1,5 @@
-import { apiRequest } from '../../shared/api/client';
+import { apiBlob, apiErrorFromXhr, apiRequest, mutationHeaders } from '../../shared/api/client';
+import type { BlobContent } from '../../shared/api/client';
 import type {
   AccountStatus,
   AssignmentType,
@@ -9,6 +10,7 @@ import type {
   OrganizationUnit,
   PageResponse,
   Permission,
+  Position,
   Role,
   RoleAssignmentView,
   RoleHolderView,
@@ -105,6 +107,10 @@ export function listActiveUnits(): Promise<OrganizationUnit[]> {
   return apiRequest('/api/v1/organization-units');
 }
 
+export function listActivePositions(): Promise<Position[]> {
+  return apiRequest('/api/v1/master-data/positions');
+}
+
 export function listAllUnits(): Promise<OrganizationUnit[]> {
   return apiRequest('/api/v1/admin/organization-units');
 }
@@ -156,6 +162,7 @@ export interface EmployeeProfilePayload {
   fullName: string;
   email: string;
   employmentStatus: EmploymentStatus;
+  positionId?: string | null;
 }
 
 export function listEmployees(params: EmployeeListParams): Promise<PageResponse<EmployeeSummary>> {
@@ -195,6 +202,45 @@ export function transferEmployee(
     method: 'POST',
     body: payload,
   });
+}
+
+export interface EmployeeImportResult {
+  importedCount: number;
+}
+
+export function downloadEmployeeTemplate(): Promise<BlobContent> {
+  return apiBlob('/api/v1/admin/employees/import-template');
+}
+
+export function exportEmployees(params: {
+  keyword?: string;
+  status?: EmploymentStatus | '';
+  linked?: boolean;
+}): Promise<BlobContent> {
+  return apiBlob(
+    `/api/v1/admin/employees/export${queryString({
+      keyword: params.keyword,
+      status: params.status,
+      linked: params.linked,
+    })}`,
+  );
+}
+
+export async function importEmployees(file: File): Promise<EmployeeImportResult> {
+  const headers = await mutationHeaders();
+  const form = new FormData();
+  form.append('file', file);
+  const response = await fetch('/api/v1/admin/employees/import', {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: form,
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    throw apiErrorFromXhr(response.status, text);
+  }
+  return JSON.parse(text) as EmployeeImportResult;
 }
 
 export function createEmployeeAccount(

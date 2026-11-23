@@ -96,6 +96,25 @@ public final class MasterDataDtos {
             @NotNull(message = "Status aktif wajib diisi.") Boolean active) {
     }
 
+    public record PositionResponse(UUID id, String positionCode, String positionName, String description,
+                                   boolean active, Instant createdAt, Instant updatedAt) {
+    }
+
+    public record CreatePositionRequest(
+            @NotBlank(message = "Kode jabatan wajib diisi.")
+            @Pattern(regexp = "[A-Za-z0-9._-]{2,40}",
+                    message = "Kode jabatan 2-40 karakter: huruf, angka, titik, garis bawah, atau strip.")
+            String positionCode,
+            @NotBlank(message = "Nama jabatan wajib diisi.") @Size(max = 140) String positionName,
+            @Size(max = 4000) String description) {
+    }
+
+    public record UpdatePositionRequest(
+            @NotBlank(message = "Nama jabatan wajib diisi.") @Size(max = 140) String positionName,
+            @Size(max = 4000) String description,
+            @NotNull(message = "Status aktif wajib diisi.") Boolean active) {
+    }
+
     public record FilePolicyResponse(UUID id, String policyCode, String policyName, List<String> allowedExtensions,
                                      List<String> allowedMimeTypes, long maxFileSizeBytes, boolean defaultPolicy,
                                      boolean active, Instant updatedAt) {

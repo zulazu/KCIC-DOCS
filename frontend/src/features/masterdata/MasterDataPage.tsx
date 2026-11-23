@@ -4,6 +4,7 @@ import { PageHeader } from '../../shared/components/Surface';
 import { FilePolicyPanel } from './FilePolicyPanel';
 import { MasterDataPanel } from './MasterDataPanel';
 import type { MasterPanelConfig } from './MasterDataPanel';
+import { positionConfig } from './positionConfig';
 import {
   createCategory,
   createClassification,
@@ -24,6 +25,7 @@ const tabs = [
   { key: 'types', label: 'Tipe Dokumen' },
   { key: 'classifications', label: 'Klasifikasi' },
   { key: 'tags', label: 'Tag' },
+  { key: 'positions', label: 'Jabatan' },
   { key: 'file-policies', label: 'File Policy' },
 ] as const;
 
@@ -199,6 +201,7 @@ const descriptions: Record<TabKey, string> = {
   types: typeConfig.description,
   classifications: classificationConfig.description,
   tags: tagConfig.description,
+  positions: positionConfig.description,
   'file-policies':
     'Allowlist ekstensi, MIME type, dan ukuran file yang ditegakkan backend saat upload.',
 };
@@ -240,6 +243,7 @@ export function MasterDataPage() {
       {tab === 'types' ? <MasterDataPanel config={typeConfig} /> : null}
       {tab === 'classifications' ? <MasterDataPanel config={classificationConfig} /> : null}
       {tab === 'tags' ? <MasterDataPanel config={tagConfig} /> : null}
+      {tab === 'positions' ? <MasterDataPanel config={positionConfig} /> : null}
       {tab === 'file-policies' ? <FilePolicyPanel /> : null}
     </>
   );

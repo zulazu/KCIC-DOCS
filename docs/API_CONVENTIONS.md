@@ -89,13 +89,20 @@ New endpoints are added under `/api/v1/admin` and require `employee.manage` or t
 | GET | `/api/v1/admin/employees?page&size&sort&query&directorateId&departmentId&divisionId&employmentStatus` | `employee.view` | Server-side paged employee list with derived placement |
 | GET | `/api/v1/admin/employees?...&linked=true|false` | `employee.view` | Same list filtered by account coverage; each item carries `hasAccount` (E5) |
 | GET | `/api/v1/admin/employees/{id}` | `employee.view` | Employee detail including placement history and linked account summary |
-| POST | `/api/v1/admin/employees` | `employee.manage` | Create employee transactionally; body: `nip`, `fullName`, `email`, `employmentStatus`, optional initial `divisionUnitId` |
-| PUT | `/api/v1/admin/employees/{id}` | `employee.manage` | Update employee master fields. NIP is not self-service: only `employee.manage` may correct it, `EMPLOYEE_UPDATED` records the changed field names (not values), and the result must reconcile with the HR source. |
+| POST | `/api/v1/admin/employees` | `employee.manage` | Create employee transactionally; body: `nip`, `fullName`, `email`, `employmentStatus`, optional initial `divisionUnitId`, optional `positionId` (V20; must be an ACTIVE catalog position) |
+| PUT | `/api/v1/admin/employees/{id}` | `employee.manage` | Update employee master fields incl. optional `positionId` (null clears; keeping a since-deactivated position is allowed, new assignments require ACTIVE). NIP is not self-service: only `employee.manage` may correct it, `EMPLOYEE_UPDATED` records the changed field names (not values), and the result must reconcile with the HR source. |
 | POST | `/api/v1/admin/employees/{id}/placements` | `employee.manage` | Place/transfer; closes current active placement in the same transaction |
 | GET | `/api/v1/admin/employees/{id}/placements` | `employee.view` | Placement history, newest first |
 | POST | `/api/v1/admin/employees/{id}/account` | `user.manage` + `employee.manage` | Create the single User account for an employee; body `username`, `temporaryPassword`; email is taken from the employee; `mustChangePassword=true` |
 | POST | `/api/v1/admin/users/{id}/employee-link` | `user.manage` + `employee.manage` | Link an existing unlinked User to an Employee; body `employeeId`; rejects if either side is already linked |
 | GET | `/api/v1/admin/users/unlinked?keyword&page&size` | `user.manage` | Human accounts without `employee_id` (migration worklist); id, username, email, display name, status |
+| GET | `/api/v1/admin/employees/import-template` | `employee.manage` | Download `.xlsx` import template (Data + Petunjuk sheets); header `nip,full_name,email,employment_status,division_unit_code,position_code` (DEC-075) |
+| POST | `/api/v1/admin/employees/import` | `employee.manage` | Multipart `.xlsx` bulk import; atomic all-row validation, 5 MB / 1000 rows / 64 cols / 100 errors caps, formula cells rejected; legacy 5-column header (without `position_code`) still accepted; row errors returned as `fieldErrors` `Baris N (kolom)` |
+| GET | `/api/v1/admin/employees/export?keyword&status&linked` | `employee.view` | Excel export honoring the active list filters; columns include `position_code`/`position_name`; no credentials or storage keys |
+| GET | `/api/v1/master-data/positions` | authenticated | Active position catalog for employee forms (id, positionCode, positionName, description, active, timestamps) |
+| GET | `/api/v1/admin/master-data/positions` | `master_data.manage` | Full position catalog incl. inactive |
+| POST | `/api/v1/admin/master-data/positions` | `master_data.manage` | Create position; `positionCode` `[A-Za-z0-9._-]{2,40}` unique case-insensitive (409 on duplicate); audit `POSITION_CREATED` |
+| PUT | `/api/v1/admin/master-data/positions/{id}` | `master_data.manage` | Update name/description/active; audit `POSITION_UPDATED`; deactivation never blocks employees already holding the position |
 
 Rules:
 

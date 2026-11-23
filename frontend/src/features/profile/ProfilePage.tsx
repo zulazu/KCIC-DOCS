@@ -154,6 +154,7 @@ export function ProfilePage() {
                 </InfoRow>
                 <InfoRow label="Nama lengkap">{employee.fullName}</InfoRow>
                 <InfoRow label="Email HR">{employee.email}</InfoRow>
+                <InfoRow label="Jabatan">{employee.positionName ?? 'Belum diisi'}</InfoRow>
                 <InfoRow label="Status kepegawaian">
                   <StatusBadge status={employee.employmentStatus} />
                 </InfoRow>

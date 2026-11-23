@@ -20,6 +20,7 @@
     <properties>
         <java.version>21</java.version>
         <minio.version>8.5.17</minio.version>
+        <poi.version>5.4.1</poi.version>
         <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
 
@@ -77,6 +78,13 @@
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
             <version>${minio.version}</version>
+        </dependency>
+        <!-- XLSX import/export for HR bulk intake and reporting; XLSX is ZIP+XML,
+             not reasonably parseable with the existing stack. See DEC-075. -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
         </dependency>
 
         <dependency>

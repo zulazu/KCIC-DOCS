@@ -127,6 +127,12 @@ export const navigation: NavGroup[] = [
             icon: 'building',
             capability: 'organization.manage',
           },
+          {
+            label: 'Jabatan',
+            to: '/admin/organization/positions',
+            icon: 'users',
+            capability: 'master_data.manage',
+          },
         ],
       },
       {

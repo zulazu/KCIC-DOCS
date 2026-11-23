@@ -103,6 +103,6 @@ class BootstrapAdminInitializerTest {
     }
 
     private Employee employee(UUID id, EmploymentStatus status) {
-        return new Employee(id, "NIP-001", "Employee Name", "employee@kcic.test", status, UUID.randomUUID(), NOW);
+        return new Employee(id, "NIP-001", "Employee Name", "employee@kcic.test", status, null, UUID.randomUUID(), NOW);
     }
 }

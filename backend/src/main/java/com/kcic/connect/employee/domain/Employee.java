@@ -30,6 +30,8 @@ public class Employee {
     @Column(nullable = false, length = 20)
     private EmploymentStatus employmentStatus;
 
+    private UUID positionId;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -47,12 +49,13 @@ public class Employee {
     }
 
     public Employee(UUID id, String nip, String fullName, String email, EmploymentStatus employmentStatus,
-                    UUID actor, Instant now) {
+                    UUID positionId, UUID actor, Instant now) {
         this.id = id;
         this.nip = nip;
         this.fullName = fullName;
         this.email = email;
         this.employmentStatus = employmentStatus;
+        this.positionId = positionId;
         this.createdAt = now;
         this.updatedAt = now;
         this.createdBy = actor;
@@ -60,11 +63,12 @@ public class Employee {
     }
 
     public void update(String nip, String fullName, String email, EmploymentStatus employmentStatus,
-                       UUID actor, Instant now) {
+                       UUID positionId, UUID actor, Instant now) {
         this.nip = nip;
         this.fullName = fullName;
         this.email = email;
         this.employmentStatus = employmentStatus;
+        this.positionId = positionId;
         this.updatedBy = actor;
         this.updatedAt = now;
     }
@@ -87,6 +91,10 @@ public class Employee {
 
     public EmploymentStatus getEmploymentStatus() {
         return employmentStatus;
+    }
+
+    public UUID getPositionId() {
+        return positionId;
     }
 
     public Instant getCreatedAt() {

@@ -5,14 +5,17 @@ import com.kcic.connect.masterdata.api.MasterDataDtos.CategoryResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.ClassificationResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.CreateCategoryRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.CreateClassificationRequest;
+import com.kcic.connect.masterdata.api.MasterDataDtos.CreatePositionRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.CreateTagRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.CreateTypeRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.FilePolicyResponse;
+import com.kcic.connect.masterdata.api.MasterDataDtos.PositionResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.TagResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.TypeResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateCategoryRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateClassificationRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateFilePolicyRequest;
+import com.kcic.connect.masterdata.api.MasterDataDtos.UpdatePositionRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateTagRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateTypeRequest;
 import com.kcic.connect.masterdata.application.MasterDataService;
@@ -58,6 +61,11 @@ public class MasterDataController {
     @GetMapping("/api/v1/master-data/tags")
     public List<TagResponse> tags() {
         return masterDataService.activeTags();
+    }
+
+    @GetMapping("/api/v1/master-data/positions")
+    public List<PositionResponse> positions() {
+        return masterDataService.activePositions();
     }
 
     @GetMapping("/api/v1/master-data/file-policy")
@@ -144,6 +152,25 @@ public class MasterDataController {
                                  @PathVariable UUID tagId,
                                  @Valid @RequestBody UpdateTagRequest request) {
         return masterDataService.updateTag(UserPrincipal.require(principal).userId(), tagId, request);
+    }
+
+    @GetMapping("/api/v1/admin/master-data/positions")
+    public List<PositionResponse> allPositions(@AuthenticationPrincipal UserPrincipal principal) {
+        return masterDataService.allPositions(UserPrincipal.require(principal).userId());
+    }
+
+    @PostMapping("/api/v1/admin/master-data/positions")
+    @ResponseStatus(HttpStatus.CREATED)
+    public PositionResponse createPosition(@AuthenticationPrincipal UserPrincipal principal,
+                                           @Valid @RequestBody CreatePositionRequest request) {
+        return masterDataService.createPosition(UserPrincipal.require(principal).userId(), request);
+    }
+
+    @PutMapping("/api/v1/admin/master-data/positions/{positionId}")
+    public PositionResponse updatePosition(@AuthenticationPrincipal UserPrincipal principal,
+                                           @PathVariable UUID positionId,
+                                           @Valid @RequestBody UpdatePositionRequest request) {
+        return masterDataService.updatePosition(UserPrincipal.require(principal).userId(), positionId, request);
     }
 
     @GetMapping("/api/v1/admin/master-data/file-policies")

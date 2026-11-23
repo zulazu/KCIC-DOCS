@@ -121,6 +121,9 @@ export interface EmployeeSummary {
   departmentName: string | null;
   directorateId: string | null;
   directorateName: string | null;
+  positionId: string | null;
+  positionCode: string | null;
+  positionName: string | null;
   hasAccount: boolean;
   createdAt: string;
   updatedAt: string;
@@ -262,6 +265,16 @@ export interface DocumentTag {
   id: string;
   tagCode: string;
   tagName: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Position {
+  id: string;
+  positionCode: string;
+  positionName: string;
+  description: string | null;
   active: boolean;
   createdAt: string;
   updatedAt: string;

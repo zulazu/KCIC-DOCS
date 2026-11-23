@@ -206,3 +206,14 @@ export function apiErrorFromXhr(status: number, body: string): ApiError {
 export function fieldErrorOf(error: unknown): string | null {
   return error instanceof ApiError ? error.message : null;
 }
+
+export function saveBlob(blob: Blob, filename: string | null): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename ?? 'unduhan';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+}

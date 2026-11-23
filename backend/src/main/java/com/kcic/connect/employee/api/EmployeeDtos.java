@@ -27,6 +27,9 @@ public final class EmployeeDtos {
             String departmentName,
             UUID directorateId,
             String directorateName,
+            UUID positionId,
+            String positionCode,
+            String positionName,
             boolean hasAccount,
             Instant createdAt,
             Instant updatedAt) {
@@ -73,7 +76,8 @@ public final class EmployeeDtos {
             @NotNull(message = "Status kepegawaian wajib diisi.")
             EmploymentStatus employmentStatus,
             @NotNull(message = "Biro/Division wajib diisi.")
-            UUID divisionUnitId) {
+            UUID divisionUnitId,
+            UUID positionId) {
     }
 
     public record UpdateEmployeeRequest(
@@ -88,13 +92,17 @@ public final class EmployeeDtos {
             @Size(max = 254, message = "Email maksimal 254 karakter.")
             String email,
             @NotNull(message = "Status kepegawaian wajib diisi.")
-            EmploymentStatus employmentStatus) {
+            EmploymentStatus employmentStatus,
+            UUID positionId) {
     }
 
     public record TransferPlacementRequest(
             @NotNull(message = "Biro/Division tujuan wajib diisi.")
             UUID divisionUnitId,
             UUID expectedPlacementId) {
+    }
+
+    public record EmployeeImportResponse(int importedCount) {
     }
 
     public record CreateEmployeeAccountRequest(

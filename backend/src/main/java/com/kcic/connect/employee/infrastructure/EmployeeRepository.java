@@ -3,6 +3,8 @@ package com.kcic.connect.employee.infrastructure;
 import com.kcic.connect.employee.domain.Employee;
 import com.kcic.connect.employee.domain.EmploymentStatus;
 import jakarta.persistence.LockModeType;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
 
     @Query("select e from Employee e where lower(e.nip) = lower(:nip)")
     Optional<Employee> findByNipIgnoreCase(@Param("nip") String nip);
+
+    @Query("select e from Employee e where lower(e.nip) in :nips")
+    List<Employee> findByNipLowerIn(@Param("nips") Collection<String> lowerCaseNips);
+
+    @Query("select e from Employee e where lower(e.email) in :emails")
+    List<Employee> findByEmailLowerIn(@Param("emails") Collection<String> lowerCaseEmails);
 
     @Query("select (count(e) > 0) from Employee e where lower(e.nip) = lower(:nip)")
     boolean existsByNipIgnoreCase(@Param("nip") String nip);

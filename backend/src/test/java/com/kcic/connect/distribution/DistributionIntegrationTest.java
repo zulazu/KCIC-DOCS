@@ -80,7 +80,7 @@ class DistributionIntegrationTest extends IntegrationTestSupport {
         UUID terminatedUserId = createUser(terminatedUsername, "Terminated!Pass2026", false, null).getId();
         UUID terminatedEmployeeId = UUID.randomUUID();
         employeeRepository.save(new Employee(terminatedEmployeeId, uniqueName("NIP"), "Terminated Employee",
-                uniqueName("mail") + "@kcic.test", EmploymentStatus.TERMINATED, manager.userId(), Instant.now()));
+                uniqueName("mail") + "@kcic.test", EmploymentStatus.TERMINATED, null, manager.userId(), Instant.now()));
         employeePlacementRepository.save(new EmployeePlacement(UUID.randomUUID(), terminatedEmployeeId,
                 division.getId(), Instant.now(), manager.userId()));
         User terminatedAccount = userRepository.findById(terminatedUserId).orElseThrow();
@@ -129,7 +129,7 @@ class DistributionIntegrationTest extends IntegrationTestSupport {
         UUID userId = createUser(username, "Placed!Pass2026", false, null).getId();
         UUID employeeId = UUID.randomUUID();
         employeeRepository.save(new Employee(employeeId, uniqueName("NIP"), "Placed Employee",
-                uniqueName("mail") + "@kcic.test", EmploymentStatus.ACTIVE, manager.userId(), Instant.now()));
+                uniqueName("mail") + "@kcic.test", EmploymentStatus.ACTIVE, null, manager.userId(), Instant.now()));
         EmployeePlacement placement = employeePlacementRepository.save(new EmployeePlacement(UUID.randomUUID(),
                 employeeId, division.getId(), Instant.now(), manager.userId()));
         User user = userRepository.findById(userId).orElseThrow();

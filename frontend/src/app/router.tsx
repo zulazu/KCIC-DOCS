@@ -22,6 +22,7 @@ import {
   NotFoundPage,
   NotificationsPage,
   OrganizationPage,
+  PositionsPage,
   ProfilePage,
   RequestDetailPage,
   RequestsPage,
@@ -185,6 +186,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireCapability capability="organization.manage">
             <DivisionsPage />
+          </RequireCapability>
+        ),
+      },
+      {
+        path: 'admin/organization/positions',
+        element: (
+          <RequireCapability capability="master_data.manage">
+            <PositionsPage />
           </RequireCapability>
         ),
       },

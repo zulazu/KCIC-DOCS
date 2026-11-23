@@ -50,6 +50,19 @@ Perubahan keanggotaan tidak mengubah penerima distribusi yang sudah dikirim.
 - Satu Employee hanya memiliki satu placement aktif; transfer menutup placement lama dan menyimpan riwayat.
 - Satu Employee hanya boleh memiliki satu akun User.
 - Unit lama tanpa tipe tidak otomatis diubah; pemetaan harus berasal dari data resmi.
+
+### 4.2 Jabatan (Position)
+
+- **Organisasi → Jabatan** mengelola katalog jabatan (mis. Direktur, Kepala Biro, Manager, Supervisor, Staff). Jabatan adalah **atribut employee**, bukan tingkat unit organisasi; hierarki tetap Direktorat→Departemen→Biro/Division.
+- Kode jabatan unik (case-insensitive), format `[A-Za-z0-9._-]{2,40}`; perubahan dicatat pada audit trail (`POSITION_CREATED`/`POSITION_UPDATED`).
+- Pilih jabatan pada form tambah/ubah employee (opsional). Jabatan yang dinonaktifkan tidak dapat dipilih untuk assignment baru, tetapi employee yang sudah memakainya tetap tersimpan dan boleh mempertahankan jabatan tersebut.
+- Kolom `position_code` opsional pada import Excel; export employee menyertakan `position_code` dan `position_name`.
+
+### 4.3 Import/export Excel employee
+
+- **Template Excel** mengunduh `.xlsx` berisi sheet Data (header persis: `nip, full_name, email, employment_status, division_unit_code, position_code`) dan sheet Petunjuk. Format lama 5 kolom (tanpa `position_code`) tetap diterima.
+- **Import Excel** memvalidasi seluruh baris lebih dulu; satu baris gagal → tidak ada data yang disimpan. Batas: 5 MB, 1000 baris, 64 kolom, 100 error ditampilkan; sel formula ditolak; NIP/email harus unik dan belum terdaftar. `division_unit_code` harus Biro/Division ACTIVE; `position_code` bila diisi harus jabatan ACTIVE.
+- **Export Excel** mengunduh daftar employee sesuai filter aktif (keyword, status, akun terhubung).
 - Anggota unit, `/auth/me`, dan distribusi ke unit memakai placement aktif; penerima distribusi yang sudah terkirim tidak berubah saat employee dipindahkan.
 
 ### 4.2 Status kepegawaian mengunci akses
@@ -70,7 +83,7 @@ Perubahan keanggotaan tidak mengubah penerima distribusi yang sudah dikirim.
 
 ## 5. Master data dan file policy
 
-**Master Data** mengelola kategori, jenis dokumen, klasifikasi, tag, dan file policy:
+**Master Data** mengelola kategori, jenis dokumen, klasifikasi, tag, jabatan, dan file policy:
 
 - Data yang dinonaktifkan tidak muncul pada form baru tetapi tetap valid pada data lama.
 - File policy menentukan ekstensi dan MIME yang diizinkan serta ukuran maksimum. Nilai awal `PILOT_DEFAULT` berstatus sementara dan **harus disetujui pemilik bisnis** sebelum go-live.

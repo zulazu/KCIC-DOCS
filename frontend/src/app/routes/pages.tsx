@@ -100,6 +100,11 @@ export const MasterDataPage = lazy(() =>
     default: module.MasterDataPage,
   })),
 );
+export const PositionsPage = lazy(() =>
+  import('../../features/masterdata/PositionsPage').then((module) => ({
+    default: module.PositionsPage,
+  })),
+);
 export const RequestsPage = lazy(() =>
   import('../../features/requests/RequestsPage').then((module) => ({
     default: module.RequestsPage,

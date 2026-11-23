@@ -5,6 +5,7 @@ import type {
   DocumentTag,
   DocumentType,
   FilePolicy,
+  Position,
 } from '../../shared/api/types';
 
 export const listCategories = (): Promise<DocumentCategory[]> =>
@@ -65,6 +66,20 @@ export const updateTag = (
   body: { tagName: string; active: boolean },
 ): Promise<DocumentTag> =>
   apiRequest(`/api/v1/admin/master-data/tags/${id}`, { method: 'PUT', body });
+
+export const listPositions = (): Promise<Position[]> =>
+  apiRequest('/api/v1/admin/master-data/positions');
+export const createPosition = (body: {
+  positionCode: string;
+  positionName: string;
+  description?: string;
+}): Promise<Position> =>
+  apiRequest('/api/v1/admin/master-data/positions', { method: 'POST', body });
+export const updatePosition = (
+  id: string,
+  body: { positionName: string; description?: string; active: boolean },
+): Promise<Position> =>
+  apiRequest(`/api/v1/admin/master-data/positions/${id}`, { method: 'PUT', body });
 
 export const listFilePolicies = (): Promise<FilePolicy[]> =>
   apiRequest('/api/v1/admin/master-data/file-policies');

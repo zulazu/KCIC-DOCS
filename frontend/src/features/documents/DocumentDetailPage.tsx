@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ApiError } from '../../shared/api/client';
+import { ApiError, saveBlob } from '../../shared/api/client';
 import type {
   DocumentDetail,
   DocumentSummary,
@@ -44,7 +44,6 @@ import {
   promoteVersion,
   registerExternalLink,
   removeFavorite,
-  saveBlob,
   uploadVersion,
 } from './api';
 import { DocumentFormDialog } from './DocumentFormDialog';

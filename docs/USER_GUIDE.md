@@ -64,7 +64,11 @@ Akses dari distribusi dapat dicabut atau kedaluwarsa kapan saja oleh pengirim/ad
 - versi lama berlabel `SUPERSEDED`; tombol "Unduh versi lama" menampilkan peringatan bahwa versi tersebut **bukan acuan resmi** dan sebaiknya diverifikasi sebelum dipakai,
 - jumlah penggunaan bersifat informasi, bukan pemberian akses.
 
-## 8. Bila terjadi masalah
+## 8. Profil saya
+
+Buka **Profil** (klik nama/avatar di kanan atas) untuk melihat data akun, data kepegawaian (NIP, jabatan, status, penempatan Direktorat/Departemen/Biro), riwayat penempatan, dan mengubah password. Jabatan diisi oleh administrator dari katalog jabatan resmi; bila kosong atau keliru, hubungi administrator HR.
+
+## 9. Bila terjadi masalah
 
 | Gejala | Tindakan |
 |---|---|

@@ -7,25 +7,30 @@ import com.kcic.connect.masterdata.api.MasterDataDtos.CategoryResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.ClassificationResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.CreateCategoryRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.CreateClassificationRequest;
+import com.kcic.connect.masterdata.api.MasterDataDtos.CreatePositionRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.CreateTagRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.CreateTypeRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.FilePolicyResponse;
+import com.kcic.connect.masterdata.api.MasterDataDtos.PositionResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.TagResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.TypeResponse;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateCategoryRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateClassificationRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateFilePolicyRequest;
+import com.kcic.connect.masterdata.api.MasterDataDtos.UpdatePositionRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateTagRequest;
 import com.kcic.connect.masterdata.api.MasterDataDtos.UpdateTypeRequest;
 import com.kcic.connect.masterdata.domain.DocumentCategory;
 import com.kcic.connect.masterdata.domain.DocumentClassification;
 import com.kcic.connect.masterdata.domain.DocumentType;
 import com.kcic.connect.masterdata.domain.FilePolicy;
+import com.kcic.connect.masterdata.domain.Position;
 import com.kcic.connect.masterdata.domain.Tag;
 import com.kcic.connect.masterdata.infrastructure.DocumentCategoryRepository;
 import com.kcic.connect.masterdata.infrastructure.DocumentClassificationRepository;
 import com.kcic.connect.masterdata.infrastructure.DocumentTypeRepository;
 import com.kcic.connect.masterdata.infrastructure.FilePolicyRepository;
+import com.kcic.connect.masterdata.infrastructure.PositionRepository;
 import com.kcic.connect.masterdata.infrastructure.TagRepository;
 import com.kcic.connect.shared.api.ApiException;
 import java.time.Clock;
@@ -46,6 +51,7 @@ public class MasterDataService {
     private final DocumentTypeRepository typeRepository;
     private final DocumentClassificationRepository classificationRepository;
     private final TagRepository tagRepository;
+    private final PositionRepository positionRepository;
     private final FilePolicyRepository filePolicyRepository;
     private final AuthorizationService authorizationService;
     private final AuditService auditService;
@@ -55,6 +61,7 @@ public class MasterDataService {
                              DocumentTypeRepository typeRepository,
                              DocumentClassificationRepository classificationRepository,
                              TagRepository tagRepository,
+                             PositionRepository positionRepository,
                              FilePolicyRepository filePolicyRepository,
                              AuthorizationService authorizationService,
                              AuditService auditService,
@@ -63,6 +70,7 @@ public class MasterDataService {
         this.typeRepository = typeRepository;
         this.classificationRepository = classificationRepository;
         this.tagRepository = tagRepository;
+        this.positionRepository = positionRepository;
         this.filePolicyRepository = filePolicyRepository;
         this.authorizationService = authorizationService;
         this.auditService = auditService;
@@ -92,6 +100,12 @@ public class MasterDataService {
     @Transactional(readOnly = true)
     public List<TagResponse> activeTags() {
         return tagRepository.findAllByActiveTrueOrderByTagNameAsc().stream()
+                .map(MasterDataService::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PositionResponse> activePositions() {
+        return positionRepository.findAllByActiveTrueOrderByPositionNameAsc().stream()
                 .map(MasterDataService::toResponse).toList();
     }
 
@@ -129,6 +143,13 @@ public class MasterDataService {
     public List<TagResponse> allTags(UUID actor) {
         requireManager(actor);
         return tagRepository.findAllByOrderByTagNameAsc().stream()
+                .map(MasterDataService::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PositionResponse> allPositions(UUID actor) {
+        requireManager(actor);
+        return positionRepository.findAllByOrderByPositionNameAsc().stream()
                 .map(MasterDataService::toResponse).toList();
     }
 
@@ -283,6 +304,34 @@ public class MasterDataService {
         return toResponse(tag);
     }
 
+    // ----------------------------------------------------------- positions
+
+    @Transactional
+    public PositionResponse createPosition(UUID actor, CreatePositionRequest request) {
+        requireManager(actor);
+        String code = request.positionCode().trim();
+        if (positionRepository.existsByPositionCodeIgnoreCase(code)) {
+            throw ApiException.conflict("Kode jabatan sudah digunakan.");
+        }
+        Position position = positionRepository.save(new Position(UUID.randomUUID(), code,
+                request.positionName().trim(), request.description(), actor, Instant.now(clock)));
+        auditService.record(actor, "POSITION_CREATED", "POSITION", position.getId(), "SUCCESS",
+                Map.of("positionCode", code));
+        return toResponse(position);
+    }
+
+    @Transactional
+    public PositionResponse updatePosition(UUID actor, UUID positionId, UpdatePositionRequest request) {
+        requireManager(actor);
+        Position position = positionRepository.findById(positionId)
+                .orElseThrow(() -> ApiException.notFound("Jabatan tidak ditemukan."));
+        position.update(request.positionName().trim(), request.description(), request.active(), actor,
+                Instant.now(clock));
+        auditService.record(actor, "POSITION_UPDATED", "POSITION", positionId, "SUCCESS",
+                Map.of("positionCode", position.getPositionCode(), "active", request.active()));
+        return toResponse(position);
+    }
+
     // --------------------------------------------------------- file policy
 
     @Transactional
@@ -334,6 +383,11 @@ public class MasterDataService {
     private static TagResponse toResponse(Tag tag) {
         return new TagResponse(tag.getId(), tag.getTagCode(), tag.getTagName(), tag.isActive(),
                 tag.getCreatedAt(), tag.getUpdatedAt());
+    }
+
+    private static PositionResponse toResponse(Position position) {
+        return new PositionResponse(position.getId(), position.getPositionCode(), position.getPositionName(),
+                position.getDescription(), position.isActive(), position.getCreatedAt(), position.getUpdatedAt());
     }
 
     private static FilePolicyResponse toResponse(FilePolicy policy) {

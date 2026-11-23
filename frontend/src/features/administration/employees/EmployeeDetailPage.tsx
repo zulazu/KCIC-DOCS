@@ -21,6 +21,7 @@ import {
   createEmployeeAccount,
   getEmployee,
   linkEmployeeAccount,
+  listActivePositions,
   listActiveUnits,
   listUnlinkedAccounts,
   transferEmployee,
@@ -33,6 +34,7 @@ const profileSchema = z.object({
   fullName: z.string().trim().min(1, 'Nama lengkap wajib diisi.').max(160),
   email: z.email('Format email tidak valid.').max(254),
   employmentStatus: z.enum(['ACTIVE', 'INACTIVE', 'TERMINATED']),
+  positionId: z.string(),
 });
 
 const transferSchema = z.object({
@@ -86,6 +88,11 @@ export function EmployeeDetailPage() {
     queryFn: listActiveUnits,
   });
 
+  const positionsQuery = useQuery({
+    queryKey: ['master-data', 'positions', 'active'],
+    queryFn: listActivePositions,
+  });
+
   const unlinkedQuery = useQuery({
     queryKey: ['unlinked-accounts', linkKeyword],
     queryFn: () =>
@@ -105,7 +112,8 @@ export function EmployeeDetailPage() {
   };
 
   const editMutation = useMutation({
-    mutationFn: (values: ProfileForm) => updateEmployee(employeeId, values),
+    mutationFn: (values: ProfileForm) =>
+      updateEmployee(employeeId, { ...values, positionId: values.positionId || null }),
     onSuccess: () => {
       notify('Data employee berhasil diperbarui.');
       setEditOpen(false);
@@ -217,6 +225,7 @@ export function EmployeeDetailPage() {
       fullName: employee.fullName,
       email: employee.email,
       employmentStatus: employee.employmentStatus,
+      positionId: employee.positionId ?? '',
     });
     setEditError(null);
     setEditOpen(true);
@@ -264,6 +273,15 @@ export function EmployeeDetailPage() {
       unit.status === 'ACTIVE' &&
       unit.id !== activePlacement?.divisionUnitId,
   );
+  const activePositions = positionsQuery.data ?? [];
+  // Jabatan nonaktif tetap boleh dipertahankan pada employee yang sudah memakainya.
+  const positionOptions =
+    employee.positionId && !activePositions.some((position) => position.id === employee.positionId)
+      ? [
+          { id: employee.positionId, label: `${employee.positionName ?? 'Jabatan'} (nonaktif)` },
+          ...activePositions.map((position) => ({ id: position.id, label: position.positionName })),
+        ]
+      : activePositions.map((position) => ({ id: position.id, label: position.positionName }));
 
   return (
     <>
@@ -313,6 +331,7 @@ export function EmployeeDetailPage() {
             </DetailRow>
             <DetailRow label="Nama lengkap">{employee.fullName}</DetailRow>
             <DetailRow label="Email">{employee.email}</DetailRow>
+            <DetailRow label="Jabatan">{employee.positionName ?? '—'}</DetailRow>
             <DetailRow label="Status">
               <StatusBadge
                 status={employee.employmentStatus}
@@ -548,6 +567,20 @@ export function EmployeeDetailPage() {
             {(['ACTIVE', 'INACTIVE', 'TERMINATED'] as EmploymentStatus[]).map((status) => (
               <option key={status} value={status}>
                 {employmentStatusLabels[status]}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField
+            label="Jabatan"
+            helper="Opsional. Jabatan nonaktif hanya dapat dipertahankan, tidak dipilih untuk employee lain."
+            error={editForm.formState.errors.positionId?.message}
+            disabled={positionsQuery.isPending}
+            {...editForm.register('positionId')}
+          >
+            <option value="">Tanpa jabatan</option>
+            {positionOptions.map((position) => (
+              <option key={position.id} value={position.id}>
+                {position.label}
               </option>
             ))}
           </SelectField>

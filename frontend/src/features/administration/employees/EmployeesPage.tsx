@@ -5,7 +5,7 @@ import type { FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import { ApiError } from '../../../shared/api/client';
+import { ApiError, saveBlob } from '../../../shared/api/client';
 import type { EmploymentStatus } from '../../../shared/api/types';
 import { Badge, StatusBadge } from '../../../shared/components/Badge';
 import { Button, ButtonLink } from '../../../shared/components/Button';
@@ -18,7 +18,8 @@ import { PaginationBar } from '../../../shared/components/PaginationBar';
 import { Card, PageHeader } from '../../../shared/components/Surface';
 import { Table, Td, Th, THead, Tr } from '../../../shared/components/Table';
 import { useToast } from '../../../shared/components/Toast';
-import { createEmployee, listActiveUnits, listEmployees } from '../api';
+import { createEmployee, downloadEmployeeTemplate, exportEmployees, listActivePositions, listActiveUnits, listEmployees } from '../api';
+import { ImportEmployeesDialog } from './ImportEmployeesDialog';
 import { employmentStatusLabels } from './labels';
 
 const createSchema = z.object({
@@ -27,6 +28,7 @@ const createSchema = z.object({
   email: z.email('Format email tidak valid.').max(254),
   employmentStatus: z.enum(['ACTIVE', 'INACTIVE', 'TERMINATED']),
   divisionUnitId: z.string().min(1, 'Pilih Biro/Division.'),
+  positionId: z.string(),
 });
 
 type CreateEmployeeForm = z.infer<typeof createSchema>;
@@ -42,6 +44,9 @@ export function EmployeesPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [createOpen, setCreateOpen] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportPending, setExportPending] = useState(false);
+  const [templatePending, setTemplatePending] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { notify } = useToast();
@@ -68,6 +73,12 @@ export function EmployeesPage() {
     (unit) => unit.unitType === 'DIVISION' && unit.status === 'ACTIVE',
   );
 
+  const positionsQuery = useQuery({
+    queryKey: ['master-data', 'positions', 'active'],
+    queryFn: listActivePositions,
+  });
+  const positions = positionsQuery.data ?? [];
+
   const createForm = useForm<CreateEmployeeForm>({
     resolver: zodResolver(createSchema),
     defaultValues: {
@@ -76,6 +87,7 @@ export function EmployeesPage() {
       email: '',
       employmentStatus: 'ACTIVE',
       divisionUnitId: '',
+      positionId: '',
     },
   });
 
@@ -106,13 +118,42 @@ export function EmployeesPage() {
 
   const submitCreate = createForm.handleSubmit((values) => {
     setCreateError(null);
-    createMutation.mutate(values);
+    createMutation.mutate({ ...values, positionId: values.positionId || null });
   });
 
   const applySearch = (event: FormEvent) => {
     event.preventDefault();
     setPage(0);
     setKeyword(keywordInput.trim());
+  };
+
+  const downloadTemplate = async () => {
+    setTemplatePending(true);
+    try {
+      const content = await downloadEmployeeTemplate();
+      saveBlob(content.blob, content.filename ?? 'kcic-docs-employee-import-template.xlsx');
+    } catch {
+      notify('Template tidak dapat diunduh. Coba lagi.');
+    } finally {
+      setTemplatePending(false);
+    }
+  };
+
+  const exportExcel = async () => {
+    setExportPending(true);
+    try {
+      const content = await exportEmployees({
+        keyword,
+        status,
+        linked: accountLink === '' ? undefined : accountLink === 'true',
+      });
+      saveBlob(content.blob, content.filename ?? 'kcic-docs-employees.xlsx');
+      notify('Export Excel berhasil diunduh.');
+    } catch {
+      notify('Export Excel gagal. Coba lagi.');
+    } finally {
+      setExportPending(false);
+    }
   };
 
   const data = employeesQuery.data;
@@ -122,10 +163,24 @@ export function EmployeesPage() {
       <PageHeader
         title="Employee"
         action={
-          <Button onClick={() => setCreateOpen(true)}>
-            <Icon name="plus" size={16} />
-            Tambah employee
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="secondary" loading={templatePending} onClick={() => void downloadTemplate()}>
+              <Icon name="download" size={16} />
+              Template Excel
+            </Button>
+            <Button variant="secondary" onClick={() => setImportOpen(true)}>
+              <Icon name="upload" size={16} />
+              Import Excel
+            </Button>
+            <Button variant="secondary" loading={exportPending} onClick={() => void exportExcel()}>
+              <Icon name="download" size={16} />
+              Export Excel
+            </Button>
+            <Button onClick={() => setCreateOpen(true)}>
+              <Icon name="plus" size={16} />
+              Tambah employee
+            </Button>
+          </div>
         }
       />
 
@@ -233,6 +288,7 @@ export function EmployeesPage() {
             <THead>
               <Th>Employee</Th>
               <Th>Biro/Division</Th>
+              <Th className="hidden md:table-cell">Jabatan</Th>
               <Th className="hidden lg:table-cell">Directorate / Department</Th>
               <Th>Status</Th>
               <Th align="right">Aksi</Th>
@@ -260,6 +316,9 @@ export function EmployeesPage() {
                     ) : (
                       <span className="text-xs text-ink-secondary">Belum ditempatkan</span>
                     )}
+                  </Td>
+                  <Td className="hidden text-sm text-ink-secondary md:table-cell">
+                    {employee.positionName ?? '—'}
                   </Td>
                   <Td className="hidden text-xs text-ink-secondary lg:table-cell">
                     <p>{employee.directorateName ?? '—'}</p>
@@ -389,8 +448,32 @@ export function EmployeesPage() {
               </option>
             ))}
           </SelectField>
+          <SelectField
+            label="Jabatan"
+            helper="Opsional. Kelola daftar jabatan melalui menu Organisasi → Jabatan."
+            error={createForm.formState.errors.positionId?.message}
+            disabled={positionsQuery.isPending}
+            {...createForm.register('positionId')}
+          >
+            <option value="">Tanpa jabatan</option>
+            {positions.map((position) => (
+              <option key={position.id} value={position.id}>
+                {position.positionName}
+              </option>
+            ))}
+          </SelectField>
         </form>
       </Dialog>
+
+      <ImportEmployeesDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={(count) => {
+          setImportOpen(false);
+          notify(`${count} employee berhasil diimport dari Excel.`);
+          void queryClient.invalidateQueries({ queryKey: ['admin-employees'] });
+        }}
+      />
     </>
   );
 }

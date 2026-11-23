@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ApiError } from '../../shared/api/client';
+import { ApiError, saveBlob } from '../../shared/api/client';
 import { Badge, StatusBadge } from '../../shared/components/Badge';
 import { Button, ButtonLink } from '../../shared/components/Button';
 import { ConfirmDialog } from '../../shared/components/Dialog';
@@ -17,7 +17,7 @@ import { Card, CardHeader, DetailRow, PageHeader } from '../../shared/components
 import { useToast } from '../../shared/components/Toast';
 import { apiMessage } from '../../shared/utils/apiMessage';
 import { formatDate, formatDateTime } from '../../shared/utils/format';
-import { fetchVersionContent, saveBlob } from '../documents/api';
+import { fetchVersionContent } from '../documents/api';
 import {
   type TemplateDetail,
   type TemplateVersion,

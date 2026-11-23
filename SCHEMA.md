@@ -358,6 +358,15 @@ Kolom: `id UUID PK`, `policy_code VARCHAR(60) UNIQUE NOT NULL`, `policy_name VAR
 
 Gunakan allowlist dan validasi backend. Nilai format dan batas maksimum final merupakan open decision sebelum operasional. MIME/extension bukan bukti antivirus.
 
+### 7.6 `master.positions` (V20)
+
+Kolom: `id UUID PK`, `position_code VARCHAR(40) NOT NULL`, `position_name VARCHAR(140) NOT NULL`, `description VARCHAR(4000)`, `is_active BOOLEAN NOT NULL DEFAULT true`, `created_at`/`updated_at TIMESTAMPTZ`, `created_by`/`updated_by UUID FK users`, `row_version BIGINT NN default 0`.
+
+- Unique index case-insensitive `positions_code_lower_uq (LOWER(position_code))`; index `positions_active_idx (is_active)`.
+- Katalog jabatan adalah atribut kepegawaian, bukan tingkat unit organisasi (hierarki tetap COMPANY→DIRECTORATE→DEPARTMENT→DIVISION).
+- Seed idempotent V20: DIREKTUR, KEPALA_DEPARTEMEN, KEPALA_BIRO, MANAGER, SUPERVISOR, STAFF.
+- Assignment baru menuntut posisi ACTIVE; employee yang sudah memakai posisi yang dinonaktifkan tetap boleh mempertahankannya; clear (NULL) selalu diizinkan.
+
 ---
 
 ## 8. Repository Domain — `repository`
@@ -820,6 +829,7 @@ Aturan:
 | `full_name` | VARCHAR(160) | NN |
 | `email` | VARCHAR(254) | NN, unique case-insensitive |
 | `employment_status` | VARCHAR(20) | NN; `ACTIVE`, `INACTIVE`, `TERMINATED` |
+| `position_id` | UUID | Nullable FK `master.positions` (V20); index `employees_position_idx` |
 | `created_at`, `updated_at` | TIMESTAMPTZ | NN |
 | `created_by`, `updated_by` | UUID | FK users, nullable bootstrap |
 | `row_version` | BIGINT | NN, default 0 |
@@ -881,6 +891,7 @@ Semantik: grant pada unit U dengan flag true berlaku untuk user yang active plac
 | V17 | `include_descendants` flags | Default false; CHECK hanya unit scope |
 | V18 | `users.employee_id NOT NULL`, `organization_units.unit_type NOT NULL` | Setelah preflight data PASS |
 | V19 | Role pilot `ADMINISTRATOR`, `ADMIN`, `PIC`; rename tampilan `EMPLOYEE` → User (Employee) | Idempotent; baseline roles tetap; lihat §6.1 |
+| V20 | `master.positions` + `identity.employees.position_id` nullable FK; seed 6 jabatan baseline | Unique code case-insensitive; assignment baru wajib ACTIVE (§7.6) |
 
 ### 21.8 Schema acceptance untuk E-series
 

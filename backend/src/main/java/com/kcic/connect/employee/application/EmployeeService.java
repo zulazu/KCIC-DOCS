@@ -18,6 +18,8 @@ import com.kcic.connect.employee.infrastructure.EmployeeRepository;
 import com.kcic.connect.identity.application.AuthenticationService;
 import com.kcic.connect.identity.domain.User;
 import com.kcic.connect.identity.infrastructure.UserRepository;
+import com.kcic.connect.masterdata.domain.Position;
+import com.kcic.connect.masterdata.infrastructure.PositionRepository;
 import com.kcic.connect.organization.domain.OrganizationUnit;
 import com.kcic.connect.organization.domain.UnitStatus;
 import com.kcic.connect.organization.domain.UnitType;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -47,9 +50,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class EmployeeService {
 
+    private static final int EXPORT_MAX_ROWS = 10_000;
+
     private final EmployeeRepository employeeRepository;
     private final EmployeePlacementRepository placementRepository;
     private final OrganizationUnitRepository organizationUnitRepository;
+    private final PositionRepository positionRepository;
     private final UserRepository userRepository;
     private final AuthorizationService authorizationService;
     private final AuthenticationService authenticationService;
@@ -59,6 +65,7 @@ public class EmployeeService {
     public EmployeeService(EmployeeRepository employeeRepository,
                            EmployeePlacementRepository placementRepository,
                            OrganizationUnitRepository organizationUnitRepository,
+                           PositionRepository positionRepository,
                            UserRepository userRepository,
                            AuthorizationService authorizationService,
                            AuthenticationService authenticationService,
@@ -67,6 +74,7 @@ public class EmployeeService {
         this.employeeRepository = employeeRepository;
         this.placementRepository = placementRepository;
         this.organizationUnitRepository = organizationUnitRepository;
+        this.positionRepository = positionRepository;
         this.userRepository = userRepository;
         this.authorizationService = authorizationService;
         this.authenticationService = authenticationService;
@@ -87,18 +95,38 @@ public class EmployeeService {
         String normalizedKeyword = keyword == null ? "" : keyword.trim();
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "fullName"));
         Page<Employee> employees = employeeRepository.search(normalizedKeyword, status, linked, pageRequest);
+        return PageResponse.of(summarize(employees.getContent()), page, size, employees.getTotalElements());
+    }
 
+    /** Unpaged export for Excel reporting; capped and audited like other data egress. */
+    @Transactional
+    public List<EmployeeSummaryResponse> exportRows(UUID actor, String keyword, EmploymentStatus status,
+                                                    Boolean linked) {
+        authorizationService.requireGlobalCapability(actor, PermissionCodes.EMPLOYEE_VIEW);
+        String normalizedKeyword = keyword == null ? "" : keyword.trim();
+        Page<Employee> employees = employeeRepository.search(normalizedKeyword, status, linked,
+                PageRequest.of(0, EXPORT_MAX_ROWS, Sort.by(Sort.Direction.ASC, "fullName")));
+        List<EmployeeSummaryResponse> rows = summarize(employees.getContent());
+        auditService.record(actor, "EMPLOYEE_EXPORTED", "EMPLOYEE", null, "SUCCESS",
+                Map.of("rowCount", rows.size(),
+                        "truncated", employees.getTotalElements() > EXPORT_MAX_ROWS));
+        return rows;
+    }
+
+    private List<EmployeeSummaryResponse> summarize(List<Employee> content) {
         Map<UUID, EmployeePlacement> activePlacements = placementRepository
-                .findByEmployeeIdInAndIsActiveTrue(employees.getContent().stream().map(Employee::getId).toList())
+                .findByEmployeeIdInAndIsActiveTrue(content.stream().map(Employee::getId).toList())
                 .stream()
                 .collect(Collectors.toMap(EmployeePlacement::getEmployeeId, Function.identity()));
         Map<UUID, UnitContext> contexts = resolveContexts(activePlacements.values().stream()
                 .map(EmployeePlacement::getDivisionUnitId).toList());
         Set<UUID> linkedEmployeeIds = new HashSet<>(userRepository.findLinkedEmployeeIds(
-                employees.getContent().stream().map(Employee::getId).toList()));
-        return PageResponse.of(employees.map(employee ->
-                toSummary(employee, activePlacements.get(employee.getId()), contexts,
-                        linkedEmployeeIds.contains(employee.getId()))));
+                content.stream().map(Employee::getId).toList()));
+        Map<UUID, Position> positions = loadPositions(content);
+        return content.stream()
+                .map(employee -> toSummary(employee, activePlacements.get(employee.getId()), contexts,
+                        linkedEmployeeIds.contains(employee.getId()), positions))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -130,15 +158,21 @@ public class EmployeeService {
             throw ApiException.conflict("Email sudah digunakan.");
         }
         OrganizationUnit division = requireActiveDivision(request.divisionUnitId());
+        Position position = resolvePosition(request.positionId(), null);
         Instant now = Instant.now(clock);
         Employee employee = new Employee(UUID.randomUUID(), nip, request.fullName().trim(), email,
-                request.employmentStatus(), actor, now);
+                request.employmentStatus(), position == null ? null : position.getId(), actor, now);
         employeeRepository.save(employee);
         placementRepository.save(new EmployeePlacement(UUID.randomUUID(), employee.getId(), division.getId(),
                 now, actor));
+        Map<String, Object> createdMetadata = new HashMap<>();
+        createdMetadata.put("divisionCode", division.getUnitCode());
+        createdMetadata.put("employmentStatus", request.employmentStatus().name());
+        if (position != null) {
+            createdMetadata.put("positionCode", position.getPositionCode());
+        }
         auditService.record(actor, "EMPLOYEE_CREATED", "EMPLOYEE", employee.getId(), "SUCCESS",
-                Map.of("divisionCode", division.getUnitCode(),
-                        "employmentStatus", request.employmentStatus().name()));
+                createdMetadata);
         auditService.record(actor, "EMPLOYEE_PLACED", "EMPLOYEE", employee.getId(), "SUCCESS",
                 Map.of("divisionCode", division.getUnitCode()));
         return buildDetail(employee);
@@ -157,6 +191,8 @@ public class EmployeeService {
             throw ApiException.conflict("Email sudah digunakan.");
         }
         EmploymentStatus previousStatus = employee.getEmploymentStatus();
+        Position position = resolvePosition(request.positionId(), employee.getPositionId());
+        UUID positionId = position == null ? null : position.getId();
         List<String> changedFields = new ArrayList<>();
         if (!nip.equals(employee.getNip())) {
             changedFields.add("nip");
@@ -170,7 +206,10 @@ public class EmployeeService {
         if (previousStatus != request.employmentStatus()) {
             changedFields.add("employmentStatus");
         }
-        employee.update(nip, request.fullName().trim(), email, request.employmentStatus(), actor,
+        if (!Objects.equals(positionId, employee.getPositionId())) {
+            changedFields.add("positionId");
+        }
+        employee.update(nip, request.fullName().trim(), email, request.employmentStatus(), positionId, actor,
                 Instant.now(clock));
         employeeRepository.save(employee);
         Map<String, Object> auditMetadata = new HashMap<>();
@@ -252,7 +291,8 @@ public class EmployeeService {
                 .findFirst()
                 .orElse(null);
         User account = userRepository.findByEmployeeId(employee.getId()).orElse(null);
-        EmployeeSummaryResponse summary = toSummary(employee, active, contexts, account != null);
+        EmployeeSummaryResponse summary = toSummary(employee, active, contexts, account != null,
+                loadPositions(List.of(employee)));
         LinkedAccountView linkedAccount = account == null ? null : new LinkedAccountView(account.getId(),
                 account.getUsername(), account.getAccountStatus(), account.isMustChangePassword(),
                 account.getLastLoginAt());
@@ -270,8 +310,10 @@ public class EmployeeService {
     }
 
     private EmployeeSummaryResponse toSummary(Employee employee, EmployeePlacement active,
-                                              Map<UUID, UnitContext> contexts, boolean hasAccount) {
+                                              Map<UUID, UnitContext> contexts, boolean hasAccount,
+                                              Map<UUID, Position> positions) {
         UnitContext context = active == null ? null : contexts.get(active.getDivisionUnitId());
+        Position position = employee.getPositionId() == null ? null : positions.get(employee.getPositionId());
         return new EmployeeSummaryResponse(employee.getId(), employee.getNip(), employee.getFullName(),
                 employee.getEmail(), employee.getEmploymentStatus(),
                 active == null ? null : active.getId(),
@@ -282,7 +324,36 @@ public class EmployeeService {
                 context == null || context.department() == null ? null : context.department().getUnitName(),
                 context == null || context.directorate() == null ? null : context.directorate().getId(),
                 context == null || context.directorate() == null ? null : context.directorate().getUnitName(),
+                position == null ? null : position.getId(),
+                position == null ? null : position.getPositionCode(),
+                position == null ? null : position.getPositionName(),
                 hasAccount, employee.getCreatedAt(), employee.getUpdatedAt());
+    }
+
+    /** Keeping the currently assigned jabatan is allowed even after it is deactivated;
+     *  only new assignments require an active catalog entry. */
+    private Position resolvePosition(UUID requestedId, UUID currentId) {
+        if (requestedId == null) {
+            return null;
+        }
+        Position position = positionRepository.findById(requestedId)
+                .orElseThrow(() -> ApiException.validation("positionId", "Jabatan tidak ditemukan."));
+        if (!position.isActive() && !requestedId.equals(currentId)) {
+            throw ApiException.validation("positionId", "Jabatan harus berstatus aktif untuk dipilih.");
+        }
+        return position;
+    }
+
+    private Map<UUID, Position> loadPositions(Collection<Employee> employees) {
+        Set<UUID> ids = employees.stream()
+                .map(Employee::getPositionId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        return positionRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Position::getId, Function.identity()));
     }
 
     private Map<UUID, UnitContext> resolveContexts(Collection<UUID> divisionIds) {
