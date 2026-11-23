@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public abstract class IntegrationTestSupport {
 
     // Opt-in local PostgreSQL for Docker-less environments: set KCIC_TEST_DB_URL
-    // (plus KCIC_TEST_DB_USER/KCIC_TEST_DB_PASSWORD) to a dedicated test database.
+    // (plus KCIC_TEST_DB_USERNAME/KCIC_TEST_DB_PASSWORD) to a dedicated test database.
     static final String LOCAL_DB_URL = System.getenv("KCIC_TEST_DB_URL");
     static final PostgreSQLContainer<?> POSTGRES =
             LOCAL_DB_URL == null ? new PostgreSQLContainer<>("postgres:16-alpine") : null;
@@ -52,7 +52,7 @@ public abstract class IntegrationTestSupport {
         if (LOCAL_DB_URL != null) {
             registry.add("spring.datasource.url", () -> LOCAL_DB_URL);
             registry.add("spring.datasource.username",
-                    () -> System.getenv().getOrDefault("KCIC_TEST_DB_USER", "postgres"));
+                    () -> System.getenv().getOrDefault("KCIC_TEST_DB_USERNAME", "postgres"));
             registry.add("spring.datasource.password",
                     () -> System.getenv().getOrDefault("KCIC_TEST_DB_PASSWORD", ""));
         } else {
