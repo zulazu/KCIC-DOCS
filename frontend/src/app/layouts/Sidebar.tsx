@@ -45,7 +45,7 @@ function BrandMark({
       </span>
       {!collapsed ? (
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold tracking-[0.08em] text-white">KCIC CONNECT</p>
+          <p className="truncate text-sm font-bold tracking-[0.08em] text-white">KCIC DOCS</p>
           <p className="truncate text-[11px] text-white/75">Workspace dokumen</p>
         </div>
       ) : null}

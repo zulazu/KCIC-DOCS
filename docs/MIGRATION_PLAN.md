@@ -1,4 +1,4 @@
-# KCIC Connect — Organization & Identity Migration Plan (E-series)
+# KCIC Docs — Organization & Identity Migration Plan (E-series)
 
 Status: **plan; V14–V17 are applied to the dev database, V18/V19 are not written as Flyway migrations and not applied.** Baseline was V1–V13. Detail evidence and risk rationale: `docs/organization-identity/MIGRATION_RISK_REGISTER.md`. Naming and integrity rules: `docs/MIGRATION_CONVENTIONS.md`, `SCHEMA.md` §21.
 

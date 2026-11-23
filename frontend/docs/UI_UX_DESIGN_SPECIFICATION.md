@@ -1,8 +1,8 @@
-# KCIC Connect — UI/UX Design Specification
+# KCIC Docs — UI/UX Design Specification
 
 | Metadata | Nilai |
 |---|---|
-| Produk | KCIC Connect |
+| Produk | KCIC Docs |
 | Dokumen | Design Specification (implementation contract) |
 | Versi | 1.0 |
 | Tanggal | 22 November 2026 |

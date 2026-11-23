@@ -19,24 +19,26 @@ class AuditIntegrationTest extends IntegrationTestSupport {
 
     @Test
     void auditSearchIsPermissionGatedAndFilterable() throws Exception {
-        createUser("audit_viewer", "Auditor!Pass2026", false, "AUDITOR");
-        createUser("audit_employee", "Employee!Pass2026", false, "EMPLOYEE");
+        String auditorName = uniqueName("audit_viewer");
+        String employeeName = uniqueName("audit_employee");
+        createUser(auditorName, "Auditor!Pass2026", false, "AUDITOR");
+        createUser(employeeName, "Employee!Pass2026", false, "EMPLOYEE");
         Client auditor = newClient();
-        auditor.login("audit_viewer", "Auditor!Pass2026");
+        auditor.login(auditorName, "Auditor!Pass2026");
         Client employee = newClient();
-        employee.login("audit_employee", "Employee!Pass2026");
+        employee.login(employeeName, "Employee!Pass2026");
 
         employee.perform(get("/api/v1/audit-events"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("RESOURCE_FORBIDDEN"));
 
         auditor.perform(get("/api/v1/audit-events")
-                        .param("actor", "audit_viewer")
+                        .param("actor", auditorName)
                         .param("action", "login_success")
                         .param("outcome", "success"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[*].actionCode", everyItem(is("LOGIN_SUCCESS"))))
-                .andExpect(jsonPath("$.items[*].actorUsername", everyItem(is("audit_viewer"))))
+                .andExpect(jsonPath("$.items[*].actorUsername", everyItem(is(auditorName))))
                 .andExpect(jsonPath("$.items[*].outcome", everyItem(is("SUCCESS"))))
                 .andExpect(jsonPath("$.items[0].safeMetadata").isMap());
 

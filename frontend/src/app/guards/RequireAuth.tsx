@@ -7,7 +7,7 @@ export function FullPageStatus({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm text-center">
-        <p className="mb-6 text-lg font-bold tracking-tight text-primary">KCIC CONNECT</p>
+        <p className="mb-6 text-lg font-bold tracking-tight text-primary">KCIC DOCS</p>
         {children}
       </div>
     </div>

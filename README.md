@@ -1,4 +1,4 @@
-# KCIC Connect
+# KCIC Docs
 
 Internal document governance platform: catalog, private files and Office links, versioning, RBAC + scope + resource ACL, document requests/approvals/fulfillment, internal distribution, template catalog, in-app notifications, and business audit.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Seed DATA DUMMY lengkap untuk testing lokal KCIC Connect via REST API resmi.
+ * Seed DATA DUMMY lengkap untuk testing lokal KCIC Docs via REST API resmi.
  * Semua record ditandai DUMMY pada kode/nama/deskripsi. Idempotent: cek dulu,
  * buat bila belum ada. Tidak menghapus/mengubah data yang sudah ada.
  *

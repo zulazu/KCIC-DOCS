@@ -153,7 +153,7 @@ export function RouteFallback() {
 export function NotFoundPage() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4 text-center">
-      <p className="text-sm font-bold tracking-[0.12em] text-primary">KCIC CONNECT</p>
+      <p className="text-sm font-bold tracking-[0.12em] text-primary">KCIC DOCS</p>
       <h1 className="mt-3 text-3xl font-bold text-ink">Halaman tidak ditemukan</h1>
       <p className="mt-2 max-w-md text-sm text-ink-secondary">
         Alamat yang Anda buka tidak tersedia atau sudah dipindahkan.

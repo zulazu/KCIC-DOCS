@@ -1,4 +1,4 @@
-# KCIC Connect — Migration Risk Register (Organization & Identity)
+# KCIC Docs — Migration Risk Register (Organization & Identity)
 
 | Metadata | Nilai |
 |---|---|

@@ -1,4 +1,4 @@
-# KCIC Connect — Migration Conventions
+# KCIC Docs — Migration Conventions
 
 - Tool: Flyway (`backend/src/main/resources/db/migration`).
 - Naming: `V<sequence>__<domain>_<description>.sql` (e.g. `V2__identity_users.sql`). Released migrations are immutable; fixes require a new migration.

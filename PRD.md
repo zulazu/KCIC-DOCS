@@ -1,8 +1,8 @@
-# KCIC Connect — Product Requirements Document (PRD)
+# KCIC Docs — Product Requirements Document (PRD)
 
 | Metadata | Value |
 |---|---|
-| Product | KCIC Connect |
+| Product | KCIC Docs |
 | Document | Product Requirements Document |
 | Version | 1.1 |
 | Status | Strengthened Baseline — siap untuk technical breakdown dan implementation planning |
@@ -14,9 +14,9 @@
 
 ## 1. Ringkasan Produk
 
-KCIC Connect adalah aplikasi web internal untuk mengelola dokumen, tautan Office/eksternal, permintaan dokumen, distribusi, dan template resmi perusahaan. Produk ditujukan untuk mengurangi ketergantungan pada WhatsApp sebagai sarana utama berbagi file dan meminta dokumen, sekaligus menyediakan kendali akses dan histori yang lebih terstruktur.
+KCIC Docs adalah aplikasi web internal untuk mengelola dokumen, tautan Office/eksternal, permintaan dokumen, distribusi, dan template resmi perusahaan. Produk ditujukan untuk mengurangi ketergantungan pada WhatsApp sebagai sarana utama berbagi file dan meminta dokumen, sekaligus menyediakan kendali akses dan histori yang lebih terstruktur.
 
-KCIC Connect merupakan **pilot project dengan standar implementasi produk yang serius**. Pilot membatasi integrasi dan fitur lanjutan, bukan kualitas. Aplikasi dibangun dengan modul yang jelas, keamanan dasar, data integrity, automated testing, dan clean code agar dapat diperluas tanpa perubahan besar pada fondasi.
+KCIC Docs merupakan **pilot project dengan standar implementasi produk yang serius**. Pilot membatasi integrasi dan fitur lanjutan, bukan kualitas. Aplikasi dibangun dengan modul yang jelas, keamanan dasar, data integrity, automated testing, dan clean code agar dapat diperluas tanpa perubahan besar pada fondasi.
 
 ### 1.1 Product vision
 
@@ -47,7 +47,7 @@ KPI berikut menjadi kerangka evaluasi pilot. Target numerik ditetapkan setelah b
 | Distribution Read Rate | Recipient berstatus READ dibanding recipient terkirim | Mengukur keterjangkauan distribusi; READ hanya berarti detail distribution dibuka |
 | Current Template Usage | Penggunaan template versi current dibanding versi lama | Mengukur konsistensi template |
 | Access Review Findings | Temuan akses terlalu luas/tidak sesuai | Mengukur kualitas governance |
-| WhatsApp Dependency Reduction | Perubahan proporsi permintaan/distribusi yang masih dilakukan di luar KCIC Connect | Mengukur dampak bisnis |
+| WhatsApp Dependency Reduction | Perubahan proporsi permintaan/distribusi yang masih dilakukan di luar KCIC Docs | Mengukur dampak bisnis |
 
 Jumlah dokumen yang tinggi tidak otomatis membuktikan kualitas repository; KPI adopsi harus dibaca bersama kelengkapan metadata dan penggunaan versi current.
 
@@ -126,7 +126,7 @@ Permission `request.approve` diberikan secara terpisah kepada pengguna yang bert
 ### 4.2 Sitemap pengguna
 
 ```text
-KCIC CONNECT
+KCIC DOCS
 ├── Dashboard
 ├── Document Repository
 │   ├── All Documents
@@ -927,7 +927,7 @@ Daftar di atas merupakan domain outline, bukan final API contract. Endpoint fina
 
 ### 18.1 External Office URL
 
-Pilot hanya mencatat URL dan metadata. Backend tidak melakukan Microsoft Graph/OneDrive/SharePoint permission sync. UI harus membedakan aksi `Open external link` dari `Download from KCIC Connect`.
+Pilot hanya mencatat URL dan metadata. Backend tidak melakukan Microsoft Graph/OneDrive/SharePoint permission sync. UI harus membedakan aksi `Open external link` dari `Download from KCIC Docs`.
 
 ---
 
@@ -1285,7 +1285,7 @@ Sebuah user story selesai jika:
 
 ## 29. Kesimpulan PRD
 
-PRD ini menetapkan kebutuhan produk KCIC Connect untuk pilot internal: local authentication, user and organization administration, RBAC dan resource permission, repository file/link, metadata dan versioning, request workflow, distribution, template management, in-app notification, dan audit trail.
+PRD ini menetapkan kebutuhan produk KCIC Docs untuk pilot internal: local authentication, user and organization administration, RBAC dan resource permission, repository file/link, metadata dan versioning, request workflow, distribution, template management, in-app notification, dan audit trail.
 
 Teknologi baseline: React + TypeScript, Tailwind CSS dengan reusable UI component system, Java Spring Boot modular monolith, PostgreSQL, serta MinIO atau object storage kompatibel S3. Navigasi utama memakai left sidebar yang berubah menjadi drawer pada viewport sempit. Palet visual memakai maroon `#8B1A1A`, putih, silver, hitam, dan soft gold sesuai `DESIGN_SYSTEM.md`. SSO/LDAP, integrasi Microsoft Graph, antivirus, centralized logging, monitoring platform, Redis, RabbitMQ, dan microservices ditunda.
 

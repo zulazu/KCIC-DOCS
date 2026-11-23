@@ -77,7 +77,7 @@ export function AppShell() {
               <ol className="flex items-center gap-1.5 text-sm whitespace-nowrap">
                 <li className="hidden sm:block">
                   <Link to="/" className="text-ink-secondary hover:text-primary">
-                    KCIC Connect
+                    KCIC Docs
                   </Link>
                 </li>
                 {(() => {
@@ -157,7 +157,7 @@ export function AppShell() {
         </main>
 
         <footer className="w-full px-4 pb-5 text-[11px] text-ink-secondary lg:px-8 2xl:px-12">
-          <span>KCIC Connect — pilot internal</span>
+          <span>KCIC Docs — pilot internal</span>
         </footer>
       </div>
     </div>

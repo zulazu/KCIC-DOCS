@@ -1,6 +1,6 @@
-# KCIC Connect — Security Controls and Residual Risk
+# KCIC Docs — Security Controls and Residual Risk
 
-Scope: pilot deployment of KCIC Connect (internal web application, local accounts). This document records **implemented controls with code evidence**, the **protected boundaries**, and the **residual risks accepted for the pilot**. It does not replace `AGENTS.md §8`, `ARCHITECTURE.md §8/§12`, or a formal security assessment.
+Scope: pilot deployment of KCIC Docs (internal web application, local accounts). This document records **implemented controls with code evidence**, the **protected boundaries**, and the **residual risks accepted for the pilot**. It does not replace `AGENTS.md §8`, `ARCHITECTURE.md §8/§12`, or a formal security assessment.
 
 ## 1. Authentication
 
@@ -38,7 +38,7 @@ Scope: pilot deployment of KCIC Connect (internal web application, local account
 - Uploads are validated backend-side in this order: extension allowlist and declared MIME against the active file policy, size ceiling, magic-byte signature sniffing, then storage write (DEC-026).
 - SHA-256 checksum stored per version; binaries are immutable and versioned.
 - Response headers for content: `Cache-Control: private, no-store`, `X-Content-Type-Options: nosniff`, controlled `Content-Disposition`.
-- External Office links: HTTPS only, host recorded, normalized; KCIC Connect makes **no** claim about permission changes at the external provider (AGENTS §3).
+- External Office links: HTTPS only, host recorded, normalized; KCIC Docs makes **no** claim about permission changes at the external provider (AGENTS §3).
 - Compensating delete on metadata-persistence failure; failed compensation leaves an identifiable orphan for operators.
 
 ## 5. Input, API, and error handling
@@ -88,7 +88,7 @@ Executed during implementation; details in `docs/PROGRESS.md`:
 | **No centralized logging/monitoring** | Local logs only; operators must ship logs and watch `/actuator/health`. |
 | **Lazy expiry/read-time revocation** | An already-open page keeps its last downloaded bytes; the next API call is re-authorized (DEC-012/DEC-024). Distributed revocation of downloaded copies is out of scope. |
 | **In-memory visibility filtering** | Catalog visibility filters ≤1000 candidates per read (DEC-029/DEC-050); correctness is maintained at pilot volumes. |
-| **External provider permissions** | Office/SharePoint links are recorded only; KCIC Connect cannot revoke or audit access at the provider. |
+| **External provider permissions** | Office/SharePoint links are recorded only; KCIC Docs cannot revoke or audit access at the provider. |
 | **Dev filesystem storage** | `KCIC_STORAGE_PROVIDER=filesystem` is for local development; production must use the private S3/MinIO bucket. |
 | **Backup encryption/key custody** | Backups are operator-managed; encrypt at rest and control key custody outside this repository. |
 

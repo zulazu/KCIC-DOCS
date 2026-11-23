@@ -1,4 +1,4 @@
-name: kcic-connect
+name: kcic-docs
 
 services:
   postgres:

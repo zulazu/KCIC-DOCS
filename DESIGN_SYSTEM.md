@@ -1,8 +1,8 @@
-# KCIC Connect — Design System
+# KCIC Docs — Design System
 
 | Metadata | Nilai |
 |---|---|
-| Product | KCIC Connect |
+| Product | KCIC Docs |
 | Document | UI/UX Design System Specification |
 | Version | 1.1 |
 | Status | Baseline visual dan interaction specification |
@@ -13,7 +13,7 @@
 
 ## 1. Design Direction
 
-KCIC Connect harus terasa sebagai **enterprise document workspace**: profesional, tepercaya, terstruktur, ringan digunakan, dan tidak terlihat seperti dashboard template generik.
+KCIC Docs harus terasa sebagai **enterprise document workspace**: profesional, tepercaya, terstruktur, ringan digunakan, dan tidak terlihat seperti dashboard template generik.
 
 ### 1.1 Design principles
 
@@ -166,7 +166,7 @@ Gunakan sentence case. Hindari seluruh heading menggunakan uppercase. Jangan men
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  LEFT SIDEBAR      │  HEADER: Breadcrumb / Notifications / User Menu     │
 │                    ├─────────────────────────────────────────────────────┤
-│  KCIC CONNECT      │                                                     │
+│  KCIC DOCS      │                                                     │
 │  Dashboard         │  Page title                      Primary action     │
 │  Repository        │  Short page description                              │
 │  Requests          │                                                     │
@@ -215,7 +215,7 @@ Responsive design tidak berarti seluruh data table harus dipaksa menjadi card. P
 Menu utama mengikuti PRD. Menu administrasi tampil hanya untuk user yang memiliki capability terkait.
 
 ```text
-KCIC CONNECT
+KCIC DOCS
 ├── Dashboard
 ├── Repository
 │   ├── All Documents
@@ -535,6 +535,6 @@ palet, left sidebar, dan seluruh fitur tetap ada. Yang berubah dan menjadi stand
 - **Aksesibilitas tetap mengikat** (§9): focus-visible 3 px (gold di dalam sidebar/dialog),
   reduced-motion global, kontras AA, label teks untuk setiap status.
 
-Dokumen generator `design-system/kcic-connect/MASTER.md` memuat catatan override:
+Dokumen generator `design-system/kcic-docs/MASTER.md` memuat catatan override:
 palet navy/blue usulan generator ditolak; yang diadopsi hanya tipografi, pola bento,
 kepadatan data, dan disiplin aksesibilitas.

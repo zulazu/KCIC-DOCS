@@ -1,8 +1,8 @@
-# KCIC Connect — Component Standard
+# KCIC Docs — Component Standard
 
 | Metadata | Nilai |
 |---|---|
-| Produk | KCIC Connect |
+| Produk | KCIC Docs |
 | Dokumen | Shared Component Standard |
 | Versi | 1.1 |
 | Tanggal | 22 November 2026 |

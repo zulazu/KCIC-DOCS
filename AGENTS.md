@@ -1,10 +1,10 @@
-# AGENTS.md — KCIC Connect Engineering Instructions
+# AGENTS.md — KCIC Docs Engineering Instructions
 
-> Dokumen ini adalah kontrak kerja untuk AI coding agent, developer, reviewer, dan automation yang mengubah repository KCIC Connect. Baca seluruh dokumen ini sebelum melakukan perubahan kode.
+> Dokumen ini adalah kontrak kerja untuk AI coding agent, developer, reviewer, dan automation yang mengubah repository KCIC Docs. Baca seluruh dokumen ini sebelum melakukan perubahan kode.
 
 | Metadata | Nilai |
 |---|---|
-| Produk | KCIC Connect |
+| Produk | KCIC Docs |
 | Dokumen | Agent Engineering Instructions |
 | Versi | 1.0 |
 | Status | Baseline implementasi |
@@ -15,9 +15,9 @@
 
 ## 1. Misi Produk
 
-Bangun KCIC Connect sebagai aplikasi web internal untuk menemukan, mengelola, meminta, dan mendistribusikan dokumen perusahaan secara terkontrol. Produk menggantikan ketergantungan pada percakapan informal sebagai tempat utama mencari dokumen dan meminta pemenuhan dokumen.
+Bangun KCIC Docs sebagai aplikasi web internal untuk menemukan, mengelola, meminta, dan mendistribusikan dokumen perusahaan secara terkontrol. Produk menggantikan ketergantungan pada percakapan informal sebagai tempat utama mencari dokumen dan meminta pemenuhan dokumen.
 
-KCIC Connect adalah **pilot project dengan standar engineering produk yang serius**. Pilot membatasi fitur dan integrasi, bukan kualitas implementasi. Jangan membangun solusi sekali pakai, prototype disposable, atau mock flow yang berpura-pura menjadi fitur produksi.
+KCIC Docs adalah **pilot project dengan standar engineering produk yang serius**. Pilot membatasi fitur dan integrasi, bukan kualitas implementasi. Jangan membangun solusi sekali pakai, prototype disposable, atau mock flow yang berpura-pura menjadi fitur produksi.
 
 ### Hasil utama yang harus diwujudkan
 
@@ -337,7 +337,7 @@ Antivirus tidak termasuk pilot. Validasi file dasar tidak sama dengan malware sc
 - Upload tidak boleh memberi status sukses sebelum object tersimpan dan metadata berhasil dicatat.
 - Bila persist metadata gagal setelah object upload, lakukan compensating delete. Catat/identifikasi orphan object bila compensation gagal.
 - Jangan meletakkan object storage bucket public.
-- External Office URL hanya dicatat. Jangan mengklaim KCIC Connect mengatur permission pada provider eksternal.
+- External Office URL hanya dicatat. Jangan mengklaim KCIC Docs mengatur permission pada provider eksternal.
 
 ---
 

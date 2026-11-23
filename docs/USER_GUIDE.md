@@ -1,10 +1,10 @@
-# KCIC Connect — Panduan Pengguna
+# KCIC Docs — Panduan Pengguna
 
-Panduan singkat untuk pengguna internal (Employee, Contributor, Unit Manager) pada pilot KCIC Connect.
+Panduan singkat untuk pengguna internal (Employee, Contributor, Unit Manager) pada pilot KCIC Docs.
 
 ## 1. Masuk dan keamanan akun
 
-1. Buka alamat KCIC Connect yang diberikan administrator.
+1. Buka alamat KCIC Docs yang diberikan administrator.
 2. Masuk dengan **username atau email** dan password dari administrator.
 3. Jika akun baru atau password direset, Anda wajib membuat password pribadi terlebih dahulu. Minimal 12 karakter dan tidak boleh sama dengan username/email.
 4. Setelah 5 kali salah password, akun terkunci sementara. Hubungi administrator bila perlu dibuka.

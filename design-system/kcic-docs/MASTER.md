@@ -6,7 +6,7 @@
 
 ---
 
-**Project:** KCIC Connect
+**Project:** KCIC Docs
 **Generated:** 2026-11-23 09:57:34
 **Category:** B2B Service
 **Design Dials:** Variance 7/10 (Balanced / Modern) | Motion 3/10 (Subtle) | Density 7/10 (Standard)

@@ -198,7 +198,7 @@ describe('accessibility — representative page composition (landmarks included)
         <header>
           <nav aria-label="Breadcrumb">
             <ol>
-              <li>KCIC Connect</li>
+              <li>KCIC Docs</li>
               <li aria-current="page">Dokumen</li>
             </ol>
           </nav>
@@ -254,7 +254,7 @@ describe('accessibility — representative page composition (landmarks included)
             />
           </Card>
         </main>
-        <footer>KCIC Connect — pilot internal</footer>
+        <footer>KCIC Docs — pilot internal</footer>
       </div>,
     );
     await expectAccessible(container, true);

@@ -1,6 +1,6 @@
-# KCIC Connect — Panduan Administrator
+# KCIC Docs — Panduan Administrator
 
-Untuk SYSTEM_ADMIN, DOCUMENT_ADMIN, dan Unit Manager yang mengelola akun, akses, repository, serta tata kelola dokumen pada pilot KCIC Connect.
+Untuk SYSTEM_ADMIN, DOCUMENT_ADMIN, dan Unit Manager yang mengelola akun, akses, repository, serta tata kelola dokumen pada pilot KCIC Docs.
 
 ## 1. Peran dan tanggung jawab
 

@@ -1,4 +1,4 @@
-# KCIC Connect — User Acceptance Test (UAT) Pilot
+# KCIC Docs — User Acceptance Test (UAT) Pilot
 
 Tanggal eksekusi: 2026-11-22
 Lingkungan: lokal (backend Spring Boot :8080, Vite :5173, PostgreSQL 16 di container `kcic-postgres`, storage filesystem dev)

@@ -1,8 +1,8 @@
-# KCIC Connect — UI/UX Audit Report
+# KCIC Docs — UI/UX Audit Report
 
 | Metadata | Nilai |
 |---|---|
-| Produk | KCIC Connect |
+| Produk | KCIC Docs |
 | Dokumen | Complete UI/UX Audit |
 | Versi | 1.0 |
 | Tanggal | 22 November 2026 |

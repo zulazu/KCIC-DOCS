@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.kcic</groupId>
-    <artifactId>kcic-connect-backend</artifactId>
+    <artifactId>kcic-docs-backend</artifactId>
     <version>1.0.0</version>
-    <name>kcic-connect-backend</name>
-    <description>KCIC Connect internal document governance platform</description>
+    <name>kcic-docs-backend</name>
+    <description>KCIC Docs internal document governance platform</description>
 
     <properties>
         <java.version>21</java.version>
@@ -102,7 +102,7 @@
     </dependencies>
 
     <build>
-        <finalName>kcic-connect</finalName>
+        <finalName>kcic-docs</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

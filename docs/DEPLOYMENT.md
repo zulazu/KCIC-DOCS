@@ -1,4 +1,4 @@
-# KCIC Connect — Deployment and Operations Runbook
+# KCIC Docs — Deployment and Operations Runbook
 
 Pilot deployment target: one Spring Boot application (modular monolith), PostgreSQL 16, private S3-compatible bucket (MinIO), and the React build served as static files behind the same reverse proxy. No Kubernetes, message broker, or distributed worker is used.
 
@@ -140,4 +140,4 @@ Recommendation: schedule DB + bucket backups at least daily, keep several genera
 - Expiry/revocation is evaluated on the next API call; an open page keeps its last downloaded bytes.
 - No centralized logging/APM; ship local logs and monitor `/actuator/health`.
 - Catalog visibility filtering is in-memory over ≤1000 candidates per read (DEC-029/DEC-050); revisit before large-scale growth.
-- External Office links are recorded only; permission changes at the provider are outside KCIC Connect.
+- External Office links are recorded only; permission changes at the provider are outside KCIC Docs.

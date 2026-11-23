@@ -1,8 +1,8 @@
-# KCIC Connect — Architecture Document
+# KCIC Docs — Architecture Document
 
 | Metadata | Nilai |
 |---|---|
-| Product | KCIC Connect |
+| Product | KCIC Docs |
 | Document | Software Architecture Document |
 | Version | 1.0 |
 | Status | Baseline arsitektur untuk implementasi pilot |
@@ -14,9 +14,9 @@
 
 ## 1. Tujuan dan Prinsip Arsitektur
 
-Dokumen ini menetapkan batas sistem dan keputusan teknis agar implementasi KCIC Connect tidak berkembang menjadi kumpulan halaman, endpoint, dan tabel yang saling terikat tanpa aturan.
+Dokumen ini menetapkan batas sistem dan keputusan teknis agar implementasi KCIC Docs tidak berkembang menjadi kumpulan halaman, endpoint, dan tabel yang saling terikat tanpa aturan.
 
-KCIC Connect adalah **internal document governance platform**. Produk harus mampu mengelola identitas dokumen, binary file/link, metadata, versi, hak akses, proses permintaan, distribusi, template, notifikasi, dan audit history.
+KCIC Docs adalah **internal document governance platform**. Produk harus mampu mengelola identitas dokumen, binary file/link, metadata, versi, hak akses, proses permintaan, distribusi, template, notifikasi, dan audit history.
 
 Prinsip arsitektur:
 
@@ -117,7 +117,7 @@ flowchart TB
     FE[React + TypeScript SPA\nTailwind + Component System]
     API[Spring Boot REST API\n/api/v1]
 
-    subgraph APP[KCIC Connect Modular Monolith]
+    subgraph APP[KCIC Docs Modular Monolith]
         ID[Identity / Local Auth]
         AZ[Authorization / RBAC / ACL]
         ORG[Organization]
@@ -166,7 +166,7 @@ flowchart TB
 2. **Application boundary:** backend melakukan authentication, authorization, validation, workflow, dan audit.
 3. **Database boundary:** PostgreSQL hanya dapat diakses oleh backend/operational tooling yang diizinkan.
 4. **Storage boundary:** object storage hanya dapat diakses backend melalui private credentials. Signed URL singkat hanya diterbitkan setelah authorization.
-5. **External provider boundary:** link Office berada di luar trust/control boundary KCIC Connect. KCIC Connect tidak memverifikasi hak akses provider tersebut.
+5. **External provider boundary:** link Office berada di luar trust/control boundary KCIC Docs. KCIC Docs tidak memverifikasi hak akses provider tersebut.
 
 ---
 

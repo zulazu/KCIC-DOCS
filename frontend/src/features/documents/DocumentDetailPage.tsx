@@ -890,7 +890,7 @@ export function DocumentDetailPage() {
       <Dialog
         open={linkOpen}
         title="Catat tautan eksternal"
-        description="KCIC Connect hanya menyimpan tautan dan metadata. Izin pada penyedia eksternal tidak diubah."
+        description="KCIC Docs hanya menyimpan tautan dan metadata. Izin pada penyedia eksternal tidak diubah."
         size="md"
         onClose={() => {
           if (linkMutation.isPending) {
@@ -920,7 +920,7 @@ export function DocumentDetailPage() {
         <div className="space-y-4">
           {linkError ? <Alert tone="danger">{linkError}</Alert> : null}
           <Alert tone="warning" title="Batas integrasi Office">
-            Tautan hanya dicatat sebagai sumber konten. KCIC Connect tidak menyinkronkan permission
+            Tautan hanya dicatat sebagai sumber konten. KCIC Docs tidak menyinkronkan permission
             Office/SharePoint; pastikan penerima telah memiliki akses pada penyedia tersebut.
           </Alert>
           <InputField

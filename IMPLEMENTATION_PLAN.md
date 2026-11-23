@@ -1,8 +1,8 @@
-# KCIC Connect — Implementation Plan
+# KCIC Docs — Implementation Plan
 
 | Metadata | Nilai |
 |---|---|
-| Product | KCIC Connect |
+| Product | KCIC Docs |
 | Document | Development Roadmap & Execution Plan |
 | Version | 1.0 |
 | Status | Baseline plan untuk AI-assisted/vibe coding |
@@ -13,9 +13,9 @@
 
 ## 1. Tujuan Dokumen
 
-Dokumen ini memecah kebutuhan KCIC Connect menjadi fase implementasi yang dapat dikerjakan, diverifikasi, dan ditinjau. Urutan fase menempatkan foundation, authorization, dan repository sebagai dependency sebelum workflow tingkat lanjut.
+Dokumen ini memecah kebutuhan KCIC Docs menjadi fase implementasi yang dapat dikerjakan, diverifikasi, dan ditinjau. Urutan fase menempatkan foundation, authorization, dan repository sebagai dependency sebelum workflow tingkat lanjut.
 
-KCIC Connect merupakan pilot project yang harus dibangun dengan standar engineering serius. Fase boleh diselesaikan bertahap, tetapi setiap fase harus menghasilkan behavior yang benar-benar berjalan dan memiliki test evidence. Jangan menyamakan halaman yang sudah dibuat dengan fitur yang sudah selesai.
+KCIC Docs merupakan pilot project yang harus dibangun dengan standar engineering serius. Fase boleh diselesaikan bertahap, tetapi setiap fase harus menghasilkan behavior yang benar-benar berjalan dan memiliki test evidence. Jangan menyamakan halaman yang sudah dibuat dengan fitur yang sudah selesai.
 
 ---
 
@@ -265,7 +265,7 @@ Urutan ini memperluas release grouping pada PRD agar pekerjaan mudah diprioritas
 
 - [ ] Register external/Office URL dan metadata.
 - [ ] HTTPS/scheme validation dan safe URL validation.
-- [ ] UI membedakan `Open external link` dari `Download from KCIC Connect`.
+- [ ] UI membedakan `Open external link` dari `Download from KCIC Docs`.
 - [ ] Tampilkan informasi bahwa akses provider eksternal tetap mengikuti permission provider.
 
 ### 8.4 Versioning and lifecycle
@@ -655,7 +655,7 @@ Jangan memakai `DONE` ketika hanya scaffold atau UI statis yang tersedia. Status
 
 ## 20. Final Pilot Release Gate
 
-KCIC Connect dapat dinyatakan siap untuk pilot bila:
+KCIC Docs dapat dinyatakan siap untuk pilot bila:
 
 - [ ] Seluruh P0 user journeys berjalan end-to-end.
 - [ ] Local account dan account lifecycle aman.

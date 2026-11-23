@@ -1,4 +1,4 @@
-# KCIC Connect — Phase E0 Repository Audit (Organization & Identity)
+# KCIC Docs — Phase E0 Repository Audit (Organization & Identity)
 
 | Metadata | Nilai |
 |---|---|

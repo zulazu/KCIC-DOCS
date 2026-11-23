@@ -10,7 +10,7 @@ Tujuan: memastikan dataset HR yang akan menghubungkan akun ke Employee dan place
 | `full_name` | Nama sesuai sistem HR, bukan nama tampilan akun. |
 | `email` | Email perusahaan yang unik; menjadi email Employee. |
 | `employment_status` | `ACTIVE`, `INACTIVE`, atau `TERMINATED` persis. |
-| `division_unit_code` | Kode unit `DIVISION` (Biro/Division) yang **sudah ada dan ACTIVE** di KCIC Connect. |
+| `division_unit_code` | Kode unit `DIVISION` (Biro/Division) yang **sudah ada dan ACTIVE** di KCIC Docs. |
 
 Header CSV harus **persis** ini dan dalam urutan ini (BOM/CRLF ditoleransi):
 
@@ -24,7 +24,7 @@ Template: `tools/preflight/e6_hr_template.csv`. File contoh masih berisi placeho
 
 1. Ekstrak dari sistem HR resmi oleh HR data owner; simpan nama file, tanggal ekstrak, dan query/report sumber.
 2. Rekonsiliasi jumlah baris dengan laporan HR (headcount aktif/non-aktif); selisih harus dijelaskan.
-3. Rekonsiliasi akun: setiap akun di KCIC Connect harus punya satu NIP; daftar akun unlinked harus kosong. Tidak ada exception akun untuk V18 (DEC-068). Jalankan worklist read-only dan simpan outputnya untuk HR:
+3. Rekonsiliasi akun: setiap akun di KCIC Docs harus punya satu NIP; daftar akun unlinked harus kosong. Tidak ada exception akun untuk V18 (DEC-068). Jalankan worklist read-only dan simpan outputnya untuk HR:
    ```bash
    docker exec -i kcic-postgres psql -X -U kcic -d <db> \
      < tools/preflight/e6_unlinked_worklist.sql \

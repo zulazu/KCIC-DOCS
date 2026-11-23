@@ -1,8 +1,8 @@
-# KCIC Connect — Database Schema Specification
+# KCIC Docs — Database Schema Specification
 
 | Metadata | Nilai |
 |---|---|
-| Product | KCIC Connect |
+| Product | KCIC Docs |
 | Document | Database Schema & Data Model |
 | Version | 1.0 |
 | Status | Baseline schema untuk migration dan technical implementation |
@@ -14,7 +14,7 @@
 
 ## 1. Tujuan dan Prinsip Data
 
-Dokumen ini menetapkan model data relasional KCIC Connect sebagai acuan migration, entity mapping, repository, API, dan test.
+Dokumen ini menetapkan model data relasional KCIC Docs sebagai acuan migration, entity mapping, repository, API, dan test.
 
 Prinsip:
 

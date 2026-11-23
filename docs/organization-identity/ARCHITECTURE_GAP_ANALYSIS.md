@@ -1,4 +1,4 @@
-# KCIC Connect — Organization & Identity Architecture Gap Analysis
+# KCIC Docs — Organization & Identity Architecture Gap Analysis
 
 | Metadata | Nilai |
 |---|---|

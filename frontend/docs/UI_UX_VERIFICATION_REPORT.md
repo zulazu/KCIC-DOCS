@@ -1,8 +1,8 @@
-# KCIC Connect — UI/UX Verification Report
+# KCIC Docs — UI/UX Verification Report
 
 | Metadata | Nilai |
 |---|---|
-| Produk | KCIC Connect |
+| Produk | KCIC Docs |
 | Dokumen | Verification Report |
 | Versi | 1.2 |
 | Tanggal | 22 November 2026 |

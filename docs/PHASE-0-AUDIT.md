@@ -1,4 +1,4 @@
-# KCIC Connect — Phase 0 Repository Audit
+# KCIC Docs — Phase 0 Repository Audit
 
 Date: 2026-11-22
 Status: COMPLETE

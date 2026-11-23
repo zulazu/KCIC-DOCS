@@ -1,4 +1,4 @@
-# KCIC Connect — API Conventions
+# KCIC Docs — API Conventions
 
 Baseline prefix: `/api/v1`. JSON request/response (multipart only for uploads). Resource identifiers are UUIDs.
 

@@ -99,7 +99,7 @@ export function LoginPage() {
             K
           </span>
           <div>
-            <p className="text-sm font-bold tracking-[0.16em] text-gold">KCIC CONNECT</p>
+            <p className="text-sm font-bold tracking-[0.16em] text-gold">KCIC DOCS</p>
             <p className="mt-0.5 text-xs text-white/75">Workspace dokumen internal</p>
           </div>
         </div>
@@ -150,7 +150,7 @@ export function LoginPage() {
                 K
               </span>
               <div>
-                <p className="text-sm font-bold tracking-[0.14em] text-gold">KCIC CONNECT</p>
+                <p className="text-sm font-bold tracking-[0.14em] text-gold">KCIC DOCS</p>
                 <p className="mt-0.5 text-xs text-white/75">Workspace dokumen internal</p>
               </div>
             </div>

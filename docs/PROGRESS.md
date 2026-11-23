@@ -1,4 +1,4 @@
-# KCIC Connect — Implementation Progress Register
+# KCIC Docs — Implementation Progress Register
 
 Updated: 2026-11-22
 Execution mode: implementation starts at Phase 0 and proceeds through Phase 9. Status vocabulary: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `DONE` (Definition of Done met; scaffold alone is never `DONE`).
@@ -757,7 +757,7 @@ Verification (2026-11-23):
 | Backend integration tests | BLOCKED — Testcontainers membutuhkan Docker yang sudah dihapus |
 | Live browser verification + apply V19 | BLOCKED — kredensial PostgreSQL lokal belum diberikan user |
 
-Docs: `SCHEMA.md` §6.1 + §21.7 (V19), `DESIGN_SYSTEM.md` §14 addendum, `docs/DECISIONS.md` DEC-070..072, `design-system/kcic-connect/MASTER.md` owner override.
+Docs: `SCHEMA.md` §6.1 + §21.7 (V19), `DESIGN_SYSTEM.md` §14 addendum, `docs/DECISIONS.md` DEC-070..072, `design-system/kcic-docs/MASTER.md` owner override.
 
 Blockers tersisa: (1) kredensial PostgreSQL lokal untuk restore `.local/kcic_connect.dump`, apply V19, dan menjalankan backend+frontend; (2) strategi integration test tanpa Docker (native PG atau tetap BLOCKED terdokumentasi); (3) E6 menunggu data HR terverifikasi; (4) seluruh perubahan sejak commit `765ff5b` belum di-commit (menunggu otorisasi baru).
 
@@ -904,3 +904,11 @@ Residual risk tingkat deployment (bukan defect kode; dicatat untuk UAT/deploymen
 - Belum ada rate limiting per-IP di lapisan gateway (lockout akun per-username sudah ada); brute-force tersebar lintas akun dimitigasi di gateway saat produksi.
 - Kebijakan password berbasis panjang (min 12) tanpa daftar password bocor; dapat diperkuat pasca-pilot.
 - Antivirus/malware scanning di luar scope pilot (keputusan terkunci); validasi ekstensi/MIME/magic-byte bukan pengganti malware scanning — jangan melabeli file "aman dari malware".
+
+### 2026-11-23 — Rebrand KCIC Connect → KCIC Docs
+
+Keputusan pemilik produk (DEC-074): nama produk menjadi **KCIC Docs**. Perubahan branding menyeluruh: seluruh string UI (sidebar, halaman login, ganti password, topbar/footer AppShell, fallback RequireAuth/pages, title + meta index.html, aria-label favicon, catatan tautan eksternal di detail dokumen), 30+ dokumen markdown (AGENTS/PRD/ARCHITECTURE/SCHEMA/DESIGN_SYSTEM/IMPLEMENTATION_PLAN/README/docs/*), direktori `design-system/kcic-connect` → `design-system/kcic-docs`, `spring.application.name` → `kcic-docs`, `kcic.app.name` → `KCIC Docs`, artifact/finalName Maven → `kcic-docs-backend`/`kcic-docs`, package npm → `kcic-docs-frontend`, nama project docker-compose → `kcic-docs`, komentar seed tool. Repo GitHub diganti nama menjadi `zulazu/KCIC-DOCS` dan remote lokal diperbarui.
+
+Identifier teknis internal dipertahankan (lihat DEC-074): package Java `com.kcic.connect`, DB `kcic_connect`, cookie `KCIC_SESSION`, env `KCIC_*`, bucket `kcic-connect-documents`. Tidak ada perubahan perilaku API, skema, atau authorization pada batch ini.
+
+Verification (2026-11-23): frontend — tsc PASS, lint 0 errors (9 warning lama), vitest 35/35, build PASS. Backend — full suite 101 test, 0 failure, BUILD SUCCESS (exit Maven 0) terhadap PostgreSQL lokal; run ulang membuktikan idempotency setelah `AuditIntegrationTest` diperbaiki memakai `uniqueName` (sebelumnya username tetap `audit_viewer` bentrok dengan sisa run pertama di DB test persisten — isu isolasi test, bukan defect produk). Browser live: title tab "KCIC Docs", halaman login "KCIC DOCS" (`.local/ui-evidence/kcic-docs-login.png`), sidebar maroon "KCIC DOCS / Workspace dokumen" + breadcrumb "KCIC Docs / Dashboard" + footer "KCIC Docs — pilot internal" (`.local/ui-evidence/kcic-docs-dashboard.png`). Backend restart: `/api/v1/version` mengembalikan `{"name":"KCIC Docs","version":"1.0.0"}`. Repo GitHub terverifikasi `zulazu/KCIC-DOCS` (private) dan remote lokal diperbarui. Catatan operasional: port 5173 sempat diduduki proses aplikasi lain tak terkait ("ERY — Admin"); proses tersebut hilang dan dev server KCIC Docs dijalankan ulang normal.

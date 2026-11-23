@@ -10,7 +10,7 @@ export function ChangePasswordPage() {
     <div className="min-h-dvh bg-background">
       <header className="flex h-16 items-center justify-between border-b border-line bg-primary px-4 sm:px-8">
         <div>
-          <p className="text-sm font-bold tracking-[0.12em] text-white">KCIC CONNECT</p>
+          <p className="text-sm font-bold tracking-[0.12em] text-white">KCIC DOCS</p>
           <p className="text-[11px] text-white/75">Workspace dokumen internal</p>
         </div>
         <button
