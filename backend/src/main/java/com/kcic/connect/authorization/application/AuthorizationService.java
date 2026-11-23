@@ -45,7 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthorizationService {
 
-    private static final String SYSTEM_ADMIN_ROLE = "SYSTEM_ADMIN";
+    private static final Set<String> GOVERNANCE_ONLY_ROLES = com.kcic.connect.authorization.domain.RoleCodes.GLOBAL_ADMIN_ROLES;
 
     private final UserRepository userRepository;
     private final UserRoleAssignmentRepository assignmentRepository;
@@ -344,7 +344,7 @@ public class AuthorizationService {
     private Set<UUID> eligibleContentRoleIds(Set<UUID> roleIds) {
         return roleRepository.findAllById(roleIds).stream()
                 .filter(r -> r.getRoleStatus() == RoleStatus.ACTIVE)
-                .filter(r -> !SYSTEM_ADMIN_ROLE.equals(r.getRoleCode()))
+                .filter(r -> !GOVERNANCE_ONLY_ROLES.contains(r.getRoleCode()))
                 .map(Role::getId)
                 .collect(java.util.stream.Collectors.toSet());
     }

@@ -1,14 +1,42 @@
-import { useEffect, useRef } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import type { MeResponse } from '../../shared/api/types';
 import { Icon } from '../../shared/components/Icon';
 import { cn } from '../../shared/utils/cn';
-import { humanizeStatus, initials } from '../../shared/utils/format';
+import { initials, roleLabel } from '../../shared/utils/format';
 import { visibleNavigation } from '../../app/navigation';
+import type { NavItem } from '../../app/navigation';
 
-function BrandMark({ collapsed }: { collapsed: boolean }) {
+function SidebarToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   return (
-    <div className="flex h-16 items-center gap-3 border-b border-white/15 px-4">
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+      aria-expanded={!collapsed}
+      title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+      className="flex size-9 shrink-0 items-center justify-center rounded-lg text-white/75 hover:bg-white/10 hover:text-white"
+    >
+      <Icon name="menu" size={18} />
+    </button>
+  );
+}
+
+function BrandMark({
+  collapsed,
+  onToggle,
+}: {
+  collapsed: boolean;
+  onToggle?: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        'border-b border-white/15',
+        collapsed ? 'flex flex-col items-center gap-2 px-3 py-3' : 'flex h-16 items-center gap-3 px-4',
+      )}
+    >
+      {collapsed && onToggle ? <SidebarToggle collapsed={collapsed} onToggle={onToggle} /> : null}
       <span
         className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-gold/60 bg-primary-pressed text-sm font-bold tracking-wide text-gold"
         aria-hidden="true"
@@ -16,10 +44,124 @@ function BrandMark({ collapsed }: { collapsed: boolean }) {
         KC
       </span>
       {!collapsed ? (
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-bold tracking-[0.08em] text-white">KCIC CONNECT</p>
           <p className="truncate text-[11px] text-white/75">Workspace dokumen</p>
         </div>
+      ) : null}
+      {!collapsed && onToggle ? <SidebarToggle collapsed={collapsed} onToggle={onToggle} /> : null}
+    </div>
+  );
+}
+
+function NavLeaf({
+  item,
+  collapsed,
+  onNavigate,
+  sub = false,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  onNavigate?: () => void;
+  sub?: boolean;
+}) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.end}
+      onClick={onNavigate}
+      title={collapsed ? item.label : undefined}
+      className={({ isActive }) =>
+        cn(
+          'relative flex items-center gap-3 rounded-lg font-medium transition-colors duration-150',
+          sub ? 'h-8 pl-9 pr-3 text-[13px]' : 'h-9 px-3 text-sm',
+          collapsed && 'justify-center px-0',
+          isActive
+            ? 'bg-white/15 text-white'
+            : 'text-white/80 hover:bg-white/10 hover:text-white',
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {isActive && !sub ? (
+            <span
+              aria-hidden="true"
+              className="absolute top-2 left-0 h-6 w-[3px] rounded-r-full bg-gold"
+            />
+          ) : null}
+          {sub ? (
+            <span
+              aria-hidden="true"
+              className={cn(
+                'absolute left-[22px] size-1.5 rounded-full',
+                isActive ? 'bg-gold' : 'bg-white/35',
+              )}
+            />
+          ) : (
+            <Icon name={item.icon} size={18} className="shrink-0" />
+          )}
+          {collapsed ? (
+            <span className="sr-only">{item.label}</span>
+          ) : (
+            <span className="truncate">{item.label}</span>
+          )}
+        </>
+      )}
+    </NavLink>
+  );
+}
+
+function NavBranch({
+  item,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  onNavigate?: () => void;
+}) {
+  const location = useLocation();
+  const childActive = (item.children ?? []).some(
+    (child) => location.pathname === child.to || location.pathname.startsWith(`${child.to}/`),
+  );
+  const [manualOpen, setManualOpen] = useState<boolean | null>(null);
+  const open = manualOpen ?? childActive;
+  const listId = `nav-sub-${item.to.replace(/\W+/g, '-')}`;
+
+  if (collapsed) {
+    return <NavLeaf item={item} collapsed onNavigate={onNavigate} />;
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-1">
+        <div className="min-w-0 flex-1">
+          <NavLeaf item={item} collapsed={false} onNavigate={onNavigate} />
+        </div>
+        <button
+          type="button"
+          onClick={() => setManualOpen(!open)}
+          aria-expanded={open}
+          aria-controls={listId}
+          aria-label={`${open ? 'Tutup' : 'Buka'} submenu ${item.label}`}
+          className="flex size-7 shrink-0 items-center justify-center rounded-md text-white/70 hover:bg-white/10 hover:text-white"
+        >
+          <Icon
+            name="chevron-down"
+            size={15}
+            className={cn('transition-transform duration-150', open && 'rotate-180')}
+          />
+        </button>
+      </div>
+      {open ? (
+        <ul id={listId} className="mt-0.5 space-y-0.5">
+          {(item.children ?? []).map((child) => (
+            <li key={child.to}>
+              <NavLeaf item={child} collapsed={false} onNavigate={onNavigate} sub />
+            </li>
+          ))}
+        </ul>
       ) : null}
     </div>
   );
@@ -52,38 +194,11 @@ function NavigationLinks({
           <ul className="space-y-1">
             {group.items.map((item) => (
               <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  end={item.end}
-                  onClick={onNavigate}
-                  title={collapsed ? item.label : undefined}
-                  className={({ isActive }) =>
-                    cn(
-                      'relative flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150',
-                      collapsed && 'justify-center px-0',
-                      isActive
-                        ? 'bg-white/15 text-white'
-                        : 'text-white/80 hover:bg-white/10 hover:text-white',
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive ? (
-                        <span
-                          aria-hidden="true"
-                          className="absolute top-2 left-0 h-6 w-[3px] rounded-r-full bg-gold"
-                        />
-                      ) : null}
-                      <Icon name={item.icon} size={18} className="shrink-0" />
-                      {collapsed ? (
-                        <span className="sr-only">{item.label}</span>
-                      ) : (
-                        <span className="truncate">{item.label}</span>
-                      )}
-                    </>
-                  )}
-                </NavLink>
+                {item.children && item.children.length > 0 ? (
+                  <NavBranch item={item} collapsed={collapsed} onNavigate={onNavigate} />
+                ) : (
+                  <NavLeaf item={item} collapsed={collapsed} onNavigate={onNavigate} />
+                )}
               </li>
             ))}
           </ul>
@@ -96,9 +211,11 @@ function NavigationLinks({
 function UserFooter({ me, collapsed }: { me: MeResponse; collapsed: boolean }) {
   return (
     <div className="border-t border-white/15 p-3">
-      <div
+      <Link
+        to="/profile"
+        title="Lihat profil saya"
         className={cn(
-          'flex items-center gap-2.5 rounded-lg px-2 py-2',
+          'flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-white/10',
           collapsed && 'justify-center px-0',
         )}
       >
@@ -112,21 +229,12 @@ function UserFooter({ me, collapsed }: { me: MeResponse; collapsed: boolean }) {
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold text-white">{me.displayName}</p>
             <p className="truncate text-[11px] text-white/70">
-              {me.roles.length > 0 ? humanizeStatus(me.roles[0] ?? '') : 'Tanpa role'}
+              {me.roles.length > 0 ? roleLabel(me.roles[0] ?? '') : 'Tanpa role'}
             </p>
           </div>
-        ) : null}
-      </div>
-      <Link
-        to="/change-password"
-        className={cn(
-          'mt-1 flex h-8 items-center gap-2 rounded-lg text-xs font-medium text-white/75 hover:bg-white/10 hover:text-white',
-          collapsed ? 'justify-center px-0' : 'px-2',
+        ) : (
+          <span className="sr-only">Lihat profil saya</span>
         )}
-        title={collapsed ? 'Ubah password' : undefined}
-      >
-        <Icon name="lock" size={15} className="shrink-0" />
-        {collapsed ? <span className="sr-only">Ubah password</span> : <span>Ubah password</span>}
       </Link>
     </div>
   );
@@ -150,19 +258,9 @@ export function DesktopSidebar({
         collapsed ? 'w-[76px]' : 'w-[264px]',
       )}
     >
-      <BrandMark collapsed={collapsed} />
+      <BrandMark collapsed={collapsed} onToggle={onToggle} />
       <NavigationLinks me={me} collapsed={collapsed} />
       <UserFooter me={me} collapsed={collapsed} />
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-        aria-expanded={!collapsed}
-        title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-        className="flex h-10 items-center justify-center border-t border-white/15 text-white/70 hover:bg-white/10 hover:text-white"
-      >
-        <Icon name={collapsed ? 'chevron-right' : 'chevron-left'} size={18} />
-      </button>
     </aside>
   );
 }

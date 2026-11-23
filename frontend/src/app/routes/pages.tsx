@@ -30,6 +30,26 @@ export const OrganizationPage = lazy(() =>
     default: module.OrganizationPage,
   })),
 );
+export const DirectoratesPage = lazy(() =>
+  import('../../features/administration/organization/UnitTypePage').then((module) => ({
+    default: module.DirectoratesPage,
+  })),
+);
+export const DepartmentsPage = lazy(() =>
+  import('../../features/administration/organization/UnitTypePage').then((module) => ({
+    default: module.DepartmentsPage,
+  })),
+);
+export const DivisionsPage = lazy(() =>
+  import('../../features/administration/organization/UnitTypePage').then((module) => ({
+    default: module.DivisionsPage,
+  })),
+);
+export const UnitDetailPage = lazy(() =>
+  import('../../features/administration/organization/UnitDetailPage').then((module) => ({
+    default: module.UnitDetailPage,
+  })),
+);
 export const EmployeesPage = lazy(() =>
   import('../../features/administration/employees/EmployeesPage').then((module) => ({
     default: module.EmployeesPage,
@@ -113,6 +133,11 @@ export const TemplateDetailPage = lazy(() =>
 export const NotificationsPage = lazy(() =>
   import('../../features/notifications/NotificationsPage').then((module) => ({
     default: module.NotificationsPage,
+  })),
+);
+export const ProfilePage = lazy(() =>
+  import('../../features/profile/ProfilePage').then((module) => ({
+    default: module.ProfilePage,
   })),
 );
 export const AuditPage = lazy(() =>

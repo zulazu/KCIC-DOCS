@@ -28,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Audit search for principals holding {@code audit.view}. The pilot scope is
- * global: SYSTEM_ADMIN and AUDITOR see all business events, which matches the
- * seeded role model in V11.
+ * global: governance roles (SYSTEM_ADMIN, ADMINISTRATOR), ADMIN, and AUDITOR
+ * see all business events, matching the seeded role model in V11/V19.
  */
 @Service
 public class AuditQueryService {

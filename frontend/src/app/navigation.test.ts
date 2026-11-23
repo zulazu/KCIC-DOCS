@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeNavLabel, visibleNavigation } from './navigation';
+import { activeNavLabel, navTrail, visibleNavigation } from './navigation';
 
 describe('visibleNavigation', () => {
   it('hides administration groups when capabilities are missing', () => {
@@ -37,6 +37,18 @@ describe('visibleNavigation', () => {
     const labels = groups.flatMap((group) => group.items.map((item) => item.label));
     expect(labels).toEqual(['Dashboard', 'Dokumen', 'Template']);
   });
+
+  it('keeps the three organization submenus under organization.manage', () => {
+    const groups = visibleNavigation(['organization.manage']);
+    const organization = groups
+      .flatMap((group) => group.items)
+      .find((item) => item.to === '/admin/organization');
+    expect(organization?.children?.map((child) => child.label)).toEqual([
+      'Direktorat',
+      'Departemen',
+      'Biro/Division',
+    ]);
+  });
 });
 
 describe('activeNavLabel', () => {
@@ -50,6 +62,38 @@ describe('activeNavLabel', () => {
     expect(activeNavLabel('/documents/123')).toBe('Dokumen');
     expect(activeNavLabel('/templates/123')).toBe('Template');
     expect(activeNavLabel('/')).toBe('Dashboard');
+    expect(activeNavLabel('/notifications')).toBe('Notifikasi');
+    expect(activeNavLabel('/profile')).toBe('Profil saya');
     expect(activeNavLabel('/unknown')).toBe('Workspace');
+  });
+
+  it('labels organization submenus and unit detail routes', () => {
+    expect(activeNavLabel('/admin/organization')).toBe('Organization');
+    expect(activeNavLabel('/admin/organization/directorates')).toBe('Direktorat');
+    expect(activeNavLabel('/admin/organization/departments')).toBe('Departemen');
+    expect(activeNavLabel('/admin/organization/divisions')).toBe('Biro/Division');
+    expect(activeNavLabel('/admin/organization/units/123')).toBe('Organization');
+  });
+});
+
+describe('navTrail', () => {
+  it('returns parent and child for organization submenu routes', () => {
+    expect(navTrail('/admin/organization/departments')).toEqual([
+      { label: 'Organization', to: '/admin/organization' },
+      { label: 'Departemen', to: '/admin/organization/departments' },
+    ]);
+  });
+
+  it('returns only the parent for unit detail routes', () => {
+    expect(navTrail('/admin/organization/units/abc')).toEqual([
+      { label: 'Organization', to: '/admin/organization' },
+    ]);
+  });
+
+  it('returns a single crumb for flat routes and empty for unknown routes', () => {
+    expect(navTrail('/admin/users/123')).toEqual([
+      { label: 'User Management', to: '/admin/users' },
+    ]);
+    expect(navTrail('/unknown')).toEqual([]);
   });
 });

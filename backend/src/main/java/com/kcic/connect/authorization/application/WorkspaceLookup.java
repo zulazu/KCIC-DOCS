@@ -12,4 +12,6 @@ public interface WorkspaceLookup {
     boolean workspaceExists(UUID workspaceId);
 
     Optional<UUID> workspaceOwnerUnit(UUID workspaceId);
+
+    Optional<String> workspaceName(UUID workspaceId);
 }

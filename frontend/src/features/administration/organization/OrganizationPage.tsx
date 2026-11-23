@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import { ApiError } from '../../../shared/api/client';
 import type { OrganizationUnit, UnitType } from '../../../shared/api/types';
@@ -21,47 +22,7 @@ import {
   listUnitMembers,
   updateUnit,
 } from '../api';
-
-const UNIT_TYPE_LABELS: Record<UnitType, string> = {
-  COMPANY: 'Perusahaan',
-  DIRECTORATE: 'Direktorat',
-  DEPARTMENT: 'Departemen',
-  DIVISION: 'Biro/Division',
-};
-
-function expectedParentType(type: UnitType): UnitType | null {
-  switch (type) {
-    case 'DIRECTORATE':
-      return 'COMPANY';
-    case 'DEPARTMENT':
-      return 'DIRECTORATE';
-    case 'DIVISION':
-      return 'DEPARTMENT';
-    default:
-      return null;
-  }
-}
-
-function typeLabel(type: UnitType | null): string {
-  return type ? UNIT_TYPE_LABELS[type] : 'Belum bertipe';
-}
-
-function parentCandidates(
-  units: OrganizationUnit[],
-  typeValue: string,
-  excludeId?: string,
-): OrganizationUnit[] {
-  if (typeValue === 'COMPANY') {
-    return [];
-  }
-  const required = typeValue === '' ? null : expectedParentType(typeValue as UnitType);
-  return units.filter(
-    (unit) =>
-      unit.id !== excludeId &&
-      unit.status === 'ACTIVE' &&
-      (required === null || unit.unitType === required),
-  );
-}
+import { UNIT_TYPE_LABELS, expectedParentType, parentCandidates, typeLabel } from './unitLabels';
 
 const createSchema = z.object({
   parentId: z.string(),
@@ -247,6 +208,36 @@ export function OrganizationPage() {
         </div>
       ) : null}
 
+      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        {(
+          [
+            ['DIRECTORATE', '/admin/organization/directorates'],
+            ['DEPARTMENT', '/admin/organization/departments'],
+            ['DIVISION', '/admin/organization/divisions'],
+          ] as const
+        ).map(([type, to]) => (
+          <Link
+            key={type}
+            to={to}
+            className="tile-hover flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-4 shadow-card"
+          >
+            <div>
+              <p className="text-xs font-semibold tracking-[0.06em] text-ink-secondary uppercase">
+                {UNIT_TYPE_LABELS[type]}
+              </p>
+              <p className="font-display text-[26px] leading-8 font-bold text-ink tabular-nums">
+                {unitsQuery.data
+                  ? unitsQuery.data.filter((unit) => unit.unitType === type).length
+                  : '—'}
+              </p>
+            </div>
+            <span className="flex size-8 items-center justify-center rounded-lg bg-primary-subtle text-primary">
+              <Icon name="building" size={16} />
+            </span>
+          </Link>
+        ))}
+      </div>
+
       <Card>
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line px-5 py-4">
           <div className="w-full max-w-sm">
@@ -344,6 +335,14 @@ export function OrganizationPage() {
                         <Button size="compact" variant="secondary" onClick={() => setEditTarget(unit)}>
                           Ubah
                         </Button>
+                        <ButtonLink
+                          to={`/admin/organization/units/${unit.id}`}
+                          variant="secondary"
+                          size="compact"
+                        >
+                          Detail
+                          <Icon name="chevron-right" size={14} />
+                        </ButtonLink>
                       </div>
                     </Td>
                   </Tr>

@@ -7,6 +7,7 @@ export interface NavItem {
   capability?: string;
   capabilities?: string[];
   end?: boolean;
+  children?: NavItem[];
 }
 
 export interface NavGroup {
@@ -106,6 +107,27 @@ export const navigation: NavGroup[] = [
         to: '/admin/organization',
         icon: 'building',
         capability: 'organization.manage',
+        end: true,
+        children: [
+          {
+            label: 'Direktorat',
+            to: '/admin/organization/directorates',
+            icon: 'building',
+            capability: 'organization.manage',
+          },
+          {
+            label: 'Departemen',
+            to: '/admin/organization/departments',
+            icon: 'building',
+            capability: 'organization.manage',
+          },
+          {
+            label: 'Biro/Division',
+            to: '/admin/organization/divisions',
+            icon: 'building',
+            capability: 'organization.manage',
+          },
+        ],
       },
       {
         label: 'Master Data',
@@ -123,30 +145,72 @@ export const navigation: NavGroup[] = [
   },
 ];
 
+function itemVisible(item: NavItem, capabilities: string[]): boolean {
+  if (!item.capability && !item.capabilities) {
+    return true;
+  }
+  if (item.capability && capabilities.includes(item.capability)) {
+    return true;
+  }
+  return item.capabilities?.some((capability) => capabilities.includes(capability)) ?? false;
+}
+
 export function visibleNavigation(capabilities: string[]): NavGroup[] {
   return navigation
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => {
-        if (!item.capability && !item.capabilities) {
-          return true;
-        }
-        if (item.capability && capabilities.includes(item.capability)) {
-          return true;
-        }
-        return item.capabilities?.some((capability) => capabilities.includes(capability)) ?? false;
-      }),
+      items: group.items
+        .filter((item) => itemVisible(item, capabilities))
+        .map((item) =>
+          item.children
+            ? {
+                ...item,
+                children: item.children.filter((child) => itemVisible(child, capabilities)),
+              }
+            : item,
+        ),
     }))
     .filter((group) => group.items.length > 0);
+}
+
+function allNavItems(): NavItem[] {
+  return navigation.flatMap((group) => group.items);
+}
+
+function matchesPath(item: NavItem, pathname: string): boolean {
+  if (item.end && !item.children) {
+    return pathname === item.to;
+  }
+  return pathname === item.to || pathname.startsWith(`${item.to}/`);
 }
 
 export function activeNavLabel(pathname: string): string {
   if (pathname === '/notifications') {
     return 'Notifikasi';
   }
-  const items = navigation.flatMap((group) => group.items);
-  const matches = items.filter((item) =>
-    item.end ? pathname === item.to : pathname === item.to || pathname.startsWith(`${item.to}/`),
-  );
+  if (pathname === '/profile') {
+    return 'Profil saya';
+  }
+  const items = allNavItems().flatMap((item) => [item, ...(item.children ?? [])]);
+  const matches = items.filter((item) => matchesPath(item, pathname));
   return matches.sort((a, b) => b.to.length - a.to.length)[0]?.label ?? 'Workspace';
+}
+
+export function navTrail(pathname: string): { label: string; to: string }[] {
+  const items = allNavItems();
+  const parents = items.filter(
+    (item) => pathname === item.to || pathname.startsWith(`${item.to}/`),
+  );
+  const parent = parents.sort((a, b) => b.to.length - a.to.length)[0];
+  if (!parent) {
+    return [];
+  }
+  const child = (parent.children ?? [])
+    .filter((item) => matchesPath(item, pathname))
+    .sort((a, b) => b.to.length - a.to.length)[0];
+  const trail = [{ label: parent.label, to: parent.to }];
+  if (child) {
+    trail.push({ label: child.label, to: child.to });
+  }
+  return trail;
 }

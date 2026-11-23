@@ -512,3 +512,29 @@ Jangan menuliskan nilai hex brand berulang-ulang pada setiap component. Komponen
 ## 13. Design Definition of Done
 
 Design system siap digunakan jika token telah diimplementasikan, shared UI primitives konsisten, AppShell dengan left sidebar berfungsi, responsive navigation berjalan, accessibility baseline dipenuhi, dan seluruh fitur baru tidak memperkenalkan visual token/komponen berbeda tanpa alasan yang terdokumentasi.
+
+---
+
+## 14. Addendum 2026-11-23 — Rebuild UI (keputusan pemilik produk)
+
+Keputusan pemilik produk terbaru mengizinkan penyimpangan dari dokumen ini selama
+palet, left sidebar, dan seluruh fitur tetap ada. Yang berubah dan menjadi standar baru:
+
+- **Tipografi:** display `EB Garamond` (heading halaman, angka statistik, brand login),
+  body `Lato` 15 px/24 px. Token `--font-display` dan `--font-sans` di `globals.css`.
+- **Bento:** kartu memakai `--radius-card: 16px` dan `--shadow-card` berlapis;
+  tile statistik/tautan memakai kelas `.tile-hover` (lift 2 px + shadow saat hover).
+  Dashboard dan halaman Organization memakai grid bento asimetris.
+- **Kontrol:** radius kontrol `--radius-lg: 10px`; tombol primary memakai `--shadow-button`
+  dan `active:translate-y-px`; baris tabel lebih padat (`py-2.5`).
+- **Navigasi:** item sidebar dapat memiliki `children` (submenu Organization: Direktorat,
+  Departemen, Biro/Division). Chevron adalah tombol terpisah dengan `aria-expanded`;
+  submenu terbuka otomatis saat anak aktif. Breadcrumb memakai `navTrail()`.
+- **Palet tidak berubah** (§2): primary `#8B1A1A`, putih/silver, hitam, soft gold `#D6B76E`.
+  Biru tetap dilarang sebagai warna brand/navigasi.
+- **Aksesibilitas tetap mengikat** (§9): focus-visible 3 px (gold di dalam sidebar/dialog),
+  reduced-motion global, kontras AA, label teks untuk setiap status.
+
+Dokumen generator `design-system/kcic-connect/MASTER.md` memuat catatan override:
+palet navy/blue usulan generator ditolak; yang diadopsi hanya tipografi, pola bento,
+kepadatan data, dan disiplin aksesibilitas.

@@ -7,7 +7,7 @@ import { Button, ButtonLink } from '../../shared/components/Button';
 import { Icon, type IconName } from '../../shared/components/Icon';
 import { Card, CardHeader, DetailRow, PageHeader } from '../../shared/components/Surface';
 import { cn } from '../../shared/utils/cn';
-import { formatDate, formatDateTime, humanizeStatus } from '../../shared/utils/format';
+import { formatDate, formatDateTime, roleLabel } from '../../shared/utils/format';
 import { listDocuments } from '../documents/api';
 import { listDistributions } from '../distributions/api';
 import { getUnreadCount, listNotifications } from '../notifications/api';
@@ -40,29 +40,39 @@ function StatTile({
     <Link
       to={to}
       className={cn(
-        'rounded-card border p-4 shadow-card transition-colors',
+        'tile-hover rounded-card border p-4 shadow-card',
         highlight
           ? 'border-primary bg-primary hover:bg-primary-hover'
-          : 'border-line bg-surface hover:border-primary/30 hover:bg-primary-subtle/40',
+          : 'border-line bg-surface hover:border-primary/30',
       )}
     >
-      <span
-        className={cn(
-          'flex items-center gap-1.5 text-xs font-semibold',
-          highlight ? 'text-white/75' : 'text-ink-secondary',
-        )}
-      >
-        <Icon name={icon} size={14} aria-hidden="true" />
-        {label}
+      <span className="flex items-start justify-between gap-2">
+        <span
+          className={cn(
+            'text-xs font-bold',
+            highlight ? 'text-white/75' : 'text-ink-secondary',
+          )}
+        >
+          {label}
+        </span>
+        <span
+          aria-hidden="true"
+          className={cn(
+            'flex size-8 shrink-0 items-center justify-center rounded-lg',
+            highlight ? 'bg-white/15 text-gold' : 'bg-primary-subtle text-primary',
+          )}
+        >
+          <Icon name={icon} size={16} />
+        </span>
       </span>
       <span
         className={cn(
-          'mt-2 block text-[28px] leading-8 font-bold tabular-nums',
+          'mt-1 block font-display text-[32px] leading-9 font-bold tabular-nums',
           highlight ? 'text-white' : 'text-ink',
         )}
       >
         {loading ? (
-          <span className="skeleton block h-8 w-14" role="status" aria-label="Memuat angka" />
+          <span className="skeleton block h-9 w-14" role="status" aria-label="Memuat angka" />
         ) : (
           (value ?? '—')
         )}
@@ -218,7 +228,7 @@ export function DashboardPage() {
         ) : null}
       </div>
 
-      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0 space-y-4">
           {canViewAssigned ? (
             <Card>
@@ -438,7 +448,7 @@ export function DashboardPage() {
                     <div className="flex flex-wrap gap-1.5">
                       {me.roles.map((role) => (
                         <Badge key={role} tone="neutral">
-                          {humanizeStatus(role)}
+                          {roleLabel(role)}
                         </Badge>
                       ))}
                     </div>

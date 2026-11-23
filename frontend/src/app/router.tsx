@@ -7,8 +7,11 @@ import {
   AuditPage,
   ChangePasswordPage,
   DashboardPage,
+  DepartmentsPage,
+  DirectoratesPage,
   DistributionDetailPage,
   DistributionsPage,
+  DivisionsPage,
   DocumentDetailPage,
   DocumentsPage,
   EmployeeDetailPage,
@@ -19,6 +22,7 @@ import {
   NotFoundPage,
   NotificationsPage,
   OrganizationPage,
+  ProfilePage,
   RequestDetailPage,
   RequestsPage,
   RoleDetailPage,
@@ -27,6 +31,7 @@ import {
   TemplateDetailPage,
   TemplatesPage,
   UserDetailPage,
+  UnitDetailPage,
   UsersPage,
   WorkspaceDetailPage,
   WorkspacesPage,
@@ -124,6 +129,10 @@ export const router = createBrowserRouter([
         element: <NotificationsPage />,
       },
       {
+        path: 'profile',
+        element: <ProfilePage />,
+      },
+      {
         path: 'admin/master-data',
         element: (
           <RequireCapability capability="master_data.manage">
@@ -152,6 +161,38 @@ export const router = createBrowserRouter([
         element: (
           <RequireCapability capability="organization.manage">
             <OrganizationPage />
+          </RequireCapability>
+        ),
+      },
+      {
+        path: 'admin/organization/directorates',
+        element: (
+          <RequireCapability capability="organization.manage">
+            <DirectoratesPage />
+          </RequireCapability>
+        ),
+      },
+      {
+        path: 'admin/organization/departments',
+        element: (
+          <RequireCapability capability="organization.manage">
+            <DepartmentsPage />
+          </RequireCapability>
+        ),
+      },
+      {
+        path: 'admin/organization/divisions',
+        element: (
+          <RequireCapability capability="organization.manage">
+            <DivisionsPage />
+          </RequireCapability>
+        ),
+      },
+      {
+        path: 'admin/organization/units/:unitId',
+        element: (
+          <RequireCapability capability="organization.manage">
+            <UnitDetailPage />
           </RequireCapability>
         ),
       },

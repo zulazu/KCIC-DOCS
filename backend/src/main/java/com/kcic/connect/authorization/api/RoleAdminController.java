@@ -3,6 +3,7 @@ package com.kcic.connect.authorization.api;
 import com.kcic.connect.authorization.api.RoleDtos.AssignRoleRequest;
 import com.kcic.connect.authorization.api.RoleDtos.CreateRoleRequest;
 import com.kcic.connect.authorization.api.RoleDtos.PermissionResponse;
+import com.kcic.connect.authorization.api.RoleDtos.RoleHolderView;
 import com.kcic.connect.authorization.api.RoleDtos.RoleResponse;
 import com.kcic.connect.authorization.api.RoleDtos.SetRolePermissionsRequest;
 import com.kcic.connect.authorization.api.RoleDtos.UpdateRoleRequest;
@@ -59,6 +60,13 @@ public class RoleAdminController {
                                        @Valid @RequestBody SetRolePermissionsRequest request) {
         return roleAdminService.setPermissions(UserPrincipal.require(principal).userId(), roleId,
                 request.permissionIds());
+    }
+
+    @GetMapping("/roles/{roleId}/assignments")
+    public List<RoleHolderView> roleAssignments(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID roleId) {
+        return roleAdminService.roleAssignments(UserPrincipal.require(principal).userId(), roleId);
     }
 
     @GetMapping("/permissions")

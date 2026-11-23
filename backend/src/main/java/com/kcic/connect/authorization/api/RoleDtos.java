@@ -58,6 +58,26 @@ public final class RoleDtos {
             Instant validUntil) {
     }
 
+    public record RoleHolderView(
+            UUID id,
+            UUID userId,
+            String username,
+            String displayName,
+            String accountStatus,
+            String scopeType,
+            UUID organizationUnitId,
+            String organizationUnitCode,
+            String organizationUnitName,
+            String organizationUnitType,
+            UUID workspaceId,
+            String workspaceName,
+            boolean includeDescendants,
+            Instant validFrom,
+            Instant validUntil,
+            String status,
+            Instant createdAt) {
+    }
+
     private RoleDtos() {
     }
 }

@@ -36,3 +36,19 @@ export function humanizeStatus(status: string): string {
     .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
     .join(' ');
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  SYSTEM_ADMIN: 'System Administrator',
+  ADMINISTRATOR: 'Administrator',
+  DOCUMENT_ADMIN: 'Document Administrator',
+  ADMIN: 'Admin',
+  UNIT_MANAGER: 'Unit Manager',
+  PIC: 'PIC',
+  CONTRIBUTOR: 'Contributor',
+  EMPLOYEE: 'User (Employee)',
+  AUDITOR: 'Auditor',
+};
+
+export function roleLabel(roleCode: string): string {
+  return ROLE_LABELS[roleCode] ?? humanizeStatus(roleCode);
+}

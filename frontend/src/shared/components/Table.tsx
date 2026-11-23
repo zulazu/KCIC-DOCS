@@ -73,7 +73,7 @@ export function Tr({
 
 export function Td({ children, className, ...rest }: TdHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <td className={cn('px-4 py-3 md:px-5', className)} {...rest}>
+    <td className={cn('px-4 py-2.5 md:px-5', className)} {...rest}>
       {children}
     </td>
   );

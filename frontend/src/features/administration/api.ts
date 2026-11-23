@@ -11,6 +11,7 @@ import type {
   Permission,
   Role,
   RoleAssignmentView,
+  RoleHolderView,
   ScopeType,
   UnitMember,
   UnitType,
@@ -106,6 +107,14 @@ export function listActiveUnits(): Promise<OrganizationUnit[]> {
 
 export function listAllUnits(): Promise<OrganizationUnit[]> {
   return apiRequest('/api/v1/admin/organization-units');
+}
+
+export function listUnitsByType(unitType: UnitType): Promise<OrganizationUnit[]> {
+  return apiRequest(`/api/v1/admin/organization-units?unitType=${unitType}`);
+}
+
+export function getUnit(unitId: string): Promise<OrganizationUnit> {
+  return apiRequest(`/api/v1/admin/organization-units/${unitId}`);
 }
 
 export function createUnit(payload: {
@@ -258,6 +267,10 @@ export function setRolePermissions(roleId: string, permissionIds: string[]): Pro
 
 export function listRoleAssignments(userId: string): Promise<RoleAssignmentView[]> {
   return apiRequest(`/api/v1/admin/users/${userId}/role-assignments`);
+}
+
+export function listRoleHolders(roleId: string): Promise<RoleHolderView[]> {
+  return apiRequest(`/api/v1/admin/roles/${roleId}/assignments`);
 }
 
 export function assignRole(

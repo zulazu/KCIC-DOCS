@@ -14,9 +14,9 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-white hover:bg-primary-hover active:bg-primary-pressed disabled:bg-primary/50',
+    'bg-primary text-white shadow-button hover:bg-primary-hover active:bg-primary-pressed disabled:bg-primary/50 disabled:shadow-none',
   secondary:
-    'border border-line-strong bg-surface text-ink hover:bg-surface-muted disabled:text-ink-disabled',
+    'border border-line-strong bg-surface text-ink hover:border-primary/40 hover:bg-primary-subtle/50 disabled:text-ink-disabled',
   ghost: 'bg-transparent text-ink hover:bg-surface-muted disabled:text-ink-disabled',
   danger:
     'bg-danger text-white hover:bg-danger-hover active:bg-danger-pressed disabled:bg-danger/50',
@@ -28,8 +28,8 @@ function buttonClasses(
   className?: string,
 ): string {
   return cn(
-    'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors duration-150',
-    'disabled:cursor-not-allowed',
+    'inline-flex items-center justify-center gap-2 rounded-lg font-bold transition-all duration-150 active:translate-y-px',
+    'disabled:cursor-not-allowed disabled:active:translate-y-0',
     size === 'default' ? 'h-10 px-4 text-sm' : 'h-8 px-3 text-xs',
     variants[variant],
     className,

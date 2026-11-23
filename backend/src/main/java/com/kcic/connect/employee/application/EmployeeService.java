@@ -107,6 +107,17 @@ public class EmployeeService {
         return buildDetail(requireEmployee(employeeId));
     }
 
+    /** Own HR profile only; the employee id is derived from the principal, never from input. */
+    @Transactional(readOnly = true)
+    public EmployeeDetailResponse selfDetail(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("User tidak ditemukan."));
+        if (user.getEmployeeId() == null) {
+            throw ApiException.notFound("Akun belum terhubung ke data employee.");
+        }
+        return buildDetail(requireEmployee(user.getEmployeeId()));
+    }
+
     @Transactional
     public EmployeeDetailResponse create(UUID actor, CreateEmployeeRequest request) {
         authorizationService.requireGlobalCapability(actor, PermissionCodes.EMPLOYEE_MANAGE);

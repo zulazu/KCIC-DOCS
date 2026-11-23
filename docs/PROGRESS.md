@@ -733,3 +733,124 @@ Verification (2026-11-22, `frontend/`):
 Docs: `frontend/docs/COMPONENT_STANDARD.md` v1.1 (§13 Table dan aksi baris, ButtonLink rule), `UI_UX_VERIFICATION_REPORT.md` v1.2 (§9 addendum), `UI_UX_IMPLEMENTATION_REPORT.md` v1.2 (§8).
 
 
+
+### 2026-11-23 — UI rebuild (ui-ux-pro-max), submenu Organization per tipe, role model pilot
+
+Status: **DONE (code + gates)**; penerapan migration V19 dan verifikasi browser live **BLOCKED** menunggu kredensial PostgreSQL lokal (Docker sudah dihapus; backend/frontend belum berjalan).
+
+Implemented:
+
+- **Rebuild UI** atas keputusan pemilik produk: skill `ui-ux-pro-max` dipasang dan dipakai (design dials variance 7 / motion 3 / density 7; gaya bento-box-grid + data-dense-dashboard; tipografi EB Garamond + Lato). Palet generator (navy/blue) ditolak — palet maroon `#8B1A1A` + putih/silver + hitam/soft gold dipertahankan; biru tetap dilarang. Token baru: `--font-display`, `--radius-card:16px`, `--radius-lg:10px`, `--radius-xl:14px`, `--shadow-card(-hover)`, `--shadow-button`, `.tile-hover`; body 15 px/24 px; focus-visible 3 px (gold di aside/dialog). Shell: sidebar submenu (chevron terpisah, `aria-expanded`, auto-open), breadcrumb `navTrail()`, login dan dashboard bento, StatTile Migrasi disamakan. Semua fitur lama tetap ada.
+- **Submenu Organization** (`organization.manage`): halaman CRUD per tipe `/admin/organization/directorates|departments|divisions` (tabel sendiri: Unit/Induk/Status/Diperbarui/Aksi, pencarian inline, dialog buat dengan tipe terkunci + induk sesuai hierarki) dan detail unit `/admin/organization/units/:unitId` (rantai hierarki, unit turunan, anggota, informasi + edit). Helper bersama `unitLabels.ts` dan `UnitEditDialog.tsx`; OrganizationPage lama tetap sebagai pohon gabungan + tile jumlah per tipe + tautan Detail. Backend tidak berubah (filter `unitType` dan endpoint detail sudah ada sejak E1/E5).
+- **Role model pilot** (DEC-070): `ADMINISTRATOR`, `ADMIN`, `PIC` + label `User (Employee)`; seed idempotent **V19__pilot_role_model.sql** (V18 tetap cadangan cutover E6 sesuai SCHEMA §21.7). `RoleCodes` constants; governance-only filter ACL mencakup SYSTEM_ADMIN+ADMINISTRATOR; routing request UNIT_MANAGER→PIC, DOCUMENT_ADMIN→ADMIN, fallback governance; last-admin guard melindungi kedua role governance; label role frontend terpusat (`roleLabel`).
+
+Verification (2026-11-23):
+
+| Command | Result |
+|---|---|
+| `frontend: npx tsc --noEmit` | PASS |
+| `frontend: npm run lint` | PASS — 0 errors, 8 pre-existing warnings |
+| `frontend: npx vitest run` | PASS — 35/35 (5 files; +6 unitLabels, +5 navigation submenu/navTrail) |
+| `frontend: npm run build` | PASS — entry 276.74 kB (gzip 84.45 kB) |
+| `backend: mvn -q -DskipTests compile` | PASS |
+| `backend: mvn test -Dtest=RequestRoutingServiceTest` | PASS — 5/5 |
+| Backend integration tests | BLOCKED — Testcontainers membutuhkan Docker yang sudah dihapus |
+| Live browser verification + apply V19 | BLOCKED — kredensial PostgreSQL lokal belum diberikan user |
+
+Docs: `SCHEMA.md` §6.1 + §21.7 (V19), `DESIGN_SYSTEM.md` §14 addendum, `docs/DECISIONS.md` DEC-070..072, `design-system/kcic-connect/MASTER.md` owner override.
+
+Blockers tersisa: (1) kredensial PostgreSQL lokal untuk restore `.local/kcic_connect.dump`, apply V19, dan menjalankan backend+frontend; (2) strategi integration test tanpa Docker (native PG atau tetap BLOCKED terdokumentasi); (3) E6 menunggu data HR terverifikasi; (4) seluruh perubahan sejak commit `765ff5b` belum di-commit (menunggu otorisasi baru).
+
+### 2026-11-23 — Environment lokal aktif, V19 applied, rebuild halaman login
+
+Status: **DONE (code + gates + verifikasi browser live)**.
+
+Environment: PostgreSQL 18.6 native (127.0.0.1:5432) menggantikan Docker; DB `kcic_connect` direstore dari `.local/kcic_connect.dump` (`--no-owner --no-privileges`), role aplikasi `kcic` dengan password tergenerate (hanya di `.env`, gitignored). Storage filesystem `.local/storage-dev`. Backend :8080 dan frontend :5173 berjalan; Flyway menerapkan **V19** otomatis — role ADMIN/ADMINISTRATOR/PIC ACTIVE dan EMPLOYEE berlabel `User (Employee)` terverifikasi via psql.
+
+Rebuild login (arahan `@ui-ux-pro-max rebuild tampilan login`): gaya editorial serif + minimalisme (hasil search skill: editorial-grid-magazine, accessible authentication; saran focus-ring biru dari skill ditolak sesuai kunci palet). Panel kiri maroon dengan tekstur dot halus, gold rule, headline EB Garamond 42 px dengan span gold, tiga mini-tile bento (katalog/akses/distribusi); kanan kartu form dengan gold bar + heading serif; mobile mendapat hero band maroon ringkas (lg:hidden). Fitur baru: toggle lihat password (ikon eye/eye-off baru, `aria-pressed` + label dinamis) memakai slot `trailing` baru pada `InputField`. Seluruh logika lama dipertahankan: zod, `autocomplete=username/current-password`, paste bebas, autoFocus, redirect `mustChangePassword`/`from`, Alert error ApiError, loading submit.
+
+Files: `frontend/src/features/auth/LoginPage.tsx` (rewrite), `frontend/src/shared/components/Field.tsx` (slot trailing), `frontend/src/shared/components/Icon.tsx` (+eye-off).
+
+Verification (2026-11-23):
+
+| Gate | Result |
+|---|---|
+| `npx tsc --noEmit` | PASS |
+| `npm run lint` | PASS — 0 errors, 8 pre-existing warnings |
+| `npx vitest run` | PASS — 35/35 |
+| `npm run build` | PASS |
+| Browser desktop 1440×900 | PASS — render sesuai desain (`.local/ui-evidence/login-rebuild-desktop.png`) |
+| Browser mobile 390×844 | PASS — hero band + form, tanpa horizontal scroll (`login-rebuild-mobile.png`) |
+| Toggle password | PASS — type text/password, aria-pressed/label benar |
+| Login benar | PASS — redirect ke dashboard |
+| Login salah | PASS — Alert "Username atau password tidak sesuai." (console error = 401 yang diharapkan) |
+| Console halaman login | PASS — 0 error pada load normal |
+
+Blocker lama yang selesai: kredensial PostgreSQL lokal (diberikan user), apply V19, verifikasi browser live. Blockers tersisa: (1) integration test backend tanpa Docker (Testcontainers) — strategi perlu diputuskan; (2) E6 menunggu data HR terverifikasi; (3) perubahan sejak `765ff5b` belum di-commit (menunggu otorisasi baru).
+
+### 2026-11-23 — Toggle sidebar pindah ke atas (ikon hamburger)
+
+Permintaan pemilik produk: tombol perluas/ciutkan sidebar tidak di bawah, tetapi di atas dengan ikon SVG tiga garis. `Sidebar.tsx`: komponen `SidebarToggle` (ikon `menu`, aria-label/aria-expanded/title tetap) dirender di header brand — kanan baris brand saat expanded, di atas logo KC saat collapsed; tombol bawah dihapus. MobileDrawer tidak berubah (tetap tombol tutup). Gates: tsc PASS, lint 0 errors, vitest 35/35. Browser: kedua state diverifikasi (`.local/ui-evidence/sidebar-toggle-expanded*.png`).
+
+### 2026-11-23 — Fix responsive zoom-out (layout full-width)
+
+Keluhan pemilik produk: saat zoom out, konten menyisakan margin kosong besar karena `main`/`footer` dibatasi `max-w-[1440px] mx-auto`. `AppShell.tsx`: cap lebar dihapus; padding progresif `px-4 lg:px-8 2xl:px-12`. `DashboardPage.tsx`: rail bento melebar di 2xl (`2xl:grid-cols-[minmax(0,1fr)_420px]`). Verifikasi browser 2400×1080: konten mengisi lebar tanpa margin kosong (`.local/ui-evidence/dashboard-wide-2400.png`). Gates: tsc/lint/vitest 35/35/build PASS.
+
+### 2026-11-23 — Halaman Profil sendiri (data diri + ubah password)
+
+Permintaan pemilik produk: "ubah password" tidak lagi di sidebar bawah; dibuat halaman `/profile` berisi data diri + ganti password.
+
+Backend: `EmployeeService.selfDetail(userId)` — id employee diturunkan dari principal (bukan input), tanpa capability global; 404 bila akun belum tertaut employee. Endpoint baru `GET /api/v1/me/employee` (`EmployeeSelfController`). `detail()` admin tetap `EMPLOYEE_VIEW`.
+
+Frontend: `features/profile/ProfilePage.tsx` (Data akun: nama/username/email/role/unit/login terakhir; Data kepegawaian: NIP, status, penempatan aktif + riwayat, EmptyState bila belum tertaut; kartu Ubah password). Form diekstrak ke `features/auth/ChangePasswordForm.tsx` dipakai bersama `ChangePasswordPage` (forced change) dan profil; error backend kini menampilkan fieldErrors spesifik ("Password saat ini tidak sesuai."). `fetchMyEmployee` di `auth/api.ts`. Route `profile` + lazy page; breadcrumb "Profil saya" (`navigation.ts` + test). Sidebar `UserFooter` dan chip topbar menjadi link ke `/profile`; link "Ubah password" sidebar dihapus.
+
+Verification (2026-11-23): tsc PASS; lint 0 errors (8 warning lama); vitest 35/35 (+kasus label /profile); build PASS; `mvn -DskipTests compile` PASS; backend restart (proses Java lama menahan :8080, di-kill lalu start ulang). Browser live: profil render via topbar & sidebar, EmptyState employee unlinked (admin), submit password-salah → Alert "Password saat ini tidak sesuai." (password admin TIDAK diubah), screenshot `.local/ui-evidence/profile-desktop.png`. Console error = 404/400 yang diharapkan dari probe tersebut.
+
+### 2026-11-23 — Pengaturan scope akses per unit di halaman Authorization (role detail)
+
+Permintaan pemilik produk: role PIC harus bisa dibatasi per Direktorat/Departemen/Biro. Enforcement backend sudah ada (E4: `matchesUnitScope` = unit tepat ATAU turunan bila `includeDescendants`); yang belum ada adalah UI manajemen assignment dari sisi role. Ditambahkan kartu "Assignment & scope akses" di halaman detail role.
+
+Backend: endpoint baru `GET /api/v1/admin/roles/{roleId}/assignments` (`RoleAdminController` → `RoleAdminService.roleAssignments`, guard `ROLE_MANAGE` global) mengembalikan `RoleHolderView[]` — fakta user (username/displayName/status), scope (GLOBAL/ORGANIZATION_UNIT/WORKSPACE + kode/nama/tipe unit atau nama workspace), `includeDescendants`, masa berlaku, status ACTIVE/REVOKED. Lookup batch user/unit; nama workspace via `WorkspaceLookup.workspaceName` (JDBC, menjaga authorization tidak bergantung entity repository). Assign/revoke memakai endpoint existing (`POST /admin/users/{id}/role-assignments`, `DELETE /admin/role-assignments/{id}`); proteksi last-system-admin tetap berlaku.
+
+Frontend: `features/administration/roles/RoleAssignmentsCard.tsx` — tabel pemegang role (link ke detail user, ScopeCell, badge "Termasuk turunan", berlaku sampai, StatusBadge, tombol Cabut dengan ConfirmDialog yang menjelaskan grant independen tidak terpengaruh), footer hitung aktif/riwayat; dialog assign (zod + react-hook-form): pilih pengguna aktif, scope Unit organisasi/Workspace/Global, unit dikelompokkan per tipe via optgroup (COMPANY→DIRECTORATE→DEPARTMENT→DIVISION + grup "Belum bertipe" untuk unit legacy), checkbox turunan dengan helper contoh kasus PIC per Direktorat, batas waktu opsional, warning untuk scope GLOBAL. `listRoleHolders` di `administration/api.ts`, tipe `RoleHolderView` di `shared/api/types.ts`.
+
+Catatan aturan bisnis (tidak di-bypass): pembuatan Direktorat dummy di bawah Head Office legacy ditolak 400 ("Unit induk belum memiliki tipe organisasi.") dan retype Head Office ditolak 409 ("Tipe unit tidak dapat diubah setelah memiliki anggota aktif."). Verifikasi live memakai unit Operations yang ada; pohon organisasi bertipe akan dibuat lewat seed dummy (#62) dengan root COMPANY baru.
+
+Verification (2026-11-23):
+
+| Gate | Result |
+|---|---|
+| `mvn -DskipTests compile` | PASS |
+| `RoleAdminServiceRoleAssignmentsTest` (baru) | PASS — 5/5 (guard capability, role unknown, mapping unit+turunan, workspace+riwayat revoked, list kosong) |
+| `npx tsc --noEmit` / lint / vitest / build | PASS — 0 errors (9 warning lama), 35/35, build OK |
+| API live `GET /admin/roles/{PIC}/assignments` | PASS — 200 |
+| Browser: assign PIC → Employee One, scope Operations + turunan | PASS — baris "Termasuk turunan · Tanpa batas · Aktif", footer "1 assignment aktif" (`.local/ui-evidence/role-scope-assignment.png`) |
+| Browser: Cabut → ConfirmDialog | PASS — baris menjadi "Dicabut", footer "0 assignment aktif · 1 riwayat dicabut" (state dikembalikan) |
+
+### 2026-11-23 — Seed data dummy lengkap untuk testing (semua modul)
+
+Permintaan pemilik produk: isi seluruh aplikasi dengan data dummy untuk testing, termasuk employee dan organisasi. Dibuat `tools/seed-dummy.mjs` (Node native fetch, tanpa dependency baru) yang mengisi via REST API resmi sebagai admin — bukan insert SQL — sehingga seluruh validasi, authorization, audit, dan notifikasi tetap berjalan.
+
+Cara pakai: `SEED_ADMIN_USERNAME=... SEED_ADMIN_PASSWORD=... node tools/seed-dummy.mjs` dari root repo (backend harus berjalan). Kredensial admin tidak di-hardcode; password akun dummy digenerate sekali dan disimpan di `.local/dummy-credentials.json` (gitignored). Skrip idempotent (look-up-before-create per kode/NIP/username/judul) dan non-destruktif; run kedua terverifikasi tidak membuat record baru.
+
+Data yang dibuat (semua berkode/berlabel DUMMY):
+
+- Organisasi bertipe: root COMPANY baru `DUMMY-CO` (unit legacy Head Office/Operations tidak disentuh; retype legacy diblokir aturan bisnis), 2 Direktorat (Operasi; Keuangan & SDM), 2 Departemen, 3 Biro/Division.
+- 6 employee (NIP DUMMY-0001..0006, email @example.com) + penempatan otomatis; 4 akun tertaut one-to-one: `dummy.budi`, `dummy.sari`, `dummy.agus`, `dummy.rina` (password final sudah di-set, tanpa forced change saat login).
+- Assignment unit PRIMARY + role: semua akun mendapat EMPLOYEE scoped ke biro-nya (pola sama dengan employee1); budi = PIC scoped Direktorat Operasi + turunan (kasus pemilik produk), sari = UNIT_MANAGER scoped Departemen Operasi + turunan, agus = CONTRIBUTOR scoped Workspace Operasi, rina = DOCUMENT_ADMIN global.
+- 3 tag dummy; kategori/jenis/klasifikasi memakai master data resmi.
+- 2 workspace + 3 folder; 6 dokumen: SOP (2 versi PDF, ACTIVE), laporan CONFIDENTIAL (PDF), IK (TXT), formulir (PDF), memo (versi external-link HTTPS), kontrak RESTRICTED sengaja DRAFT.
+- ACL contoh: ALLOW unit Biro Sarana (download, termasuk turunan) + explicit DENY user rina pada laporan confidential.
+- 2 template: Formulir Cuti PUBLISHED (+usage VIEW/DOWNLOAD), SOP DRAFT.
+- 4 request mencakup semua state: ACCESS fulfilled (ACCESS_GRANTED), DOCUMENT_DELIVERY fulfilled (DOCUMENT_LINKED), ACCESS rejected, ACCESS submitted menunggu.
+- 2 distribusi: edaran aktif (2 dokumen, penerima user + unit, expiry +30 hari) dan satu dicabut (REVOKED).
+
+Perbaikan selama eksekusi (kontrak API, bukan bypass): change-password wajib `confirmPassword`; PageResponse memakai `items`/`totalItems`; list template default hanya PUBLISHED sehingga lookup idempotency memeriksa PUBLISHED+DRAFT; akun employee baru tidak otomatis mendapat role EMPLOYEE sehingga seed meng-assign mengikuti pola existing.
+
+Verification (2026-11-23): run pertama SELESAI dengan ringkasan 8 unit / 6 employee / 4 user / 2 workspace / 6 dokumen / 2 template / 4 request / 2 distribusi; run kedua idempotent (0 pembuatan baru, hitungan sama). Browser: halaman role PIC menampilkan Budi Dummy Santoso scoped "Direktorat Operasi (Dummy) · Termasuk turunan" (`.local/ui-evidence/pic-scope-direktorat-dummy.png`); katalog dokumen menampilkan dokumen dummy dengan versi/folder/owner (`dummy-catalog.png`); login `dummy.budi` sukses tanpa forced change, inbox distribusi menampilkan edaran dummy (`dummy-budi-inbox.png`), profil menampilkan NIP + rantai penempatan Direktorat→Departemen→Biro. Sesi browser dikembalikan ke admin.
+
+### 2026-11-23 — Fix pop-up tidak center di semua menu
+
+Keluhan pemilik produk: semua dialog/pop-up menempel di kiri-atas, tidak center (contoh: "Kirim distribusi"). Akar masalah: preflight Tailwind 4 me-reset margin seluruh elemen ke 0, menghapus `margin: auto` bawaan UA yang memusatkan `<dialog>` modal. Fix satu titik di primitif bersama `shared/components/Dialog.tsx`: tambah `m-auto` pada kelas dialog — berlaku untuk semua pop-up (Dialog sm/md/lg dan ConfirmDialog) di seluruh fitur. Drawer navigasi mobile (`Sidebar.tsx`) sudah eksplisit `m-0` sehingga tidak terdampak.
+
+Verification (2026-11-23): browser live 1440×900 — dialog "Kirim distribusi" (lg) center sempurna (offset X/Y = 0, muat di viewport, `.local/ui-evidence/dialog-centered-distribusi.png`); 390×844 — center sempurna (`dialog-centered-mobile.png`); ConfirmDialog "Cabut assignment role" (sm) center (offset −8px horizontal = setengah lebar scrollbar halaman, perilaku centering native terhadap area terlihat); drawer mobile tetap rata kiri 0,0 280×844; data tidak berubah (Batal). Gates: tsc PASS, lint 0 errors (9 warning lama), vitest 35/35, build PASS.

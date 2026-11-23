@@ -57,7 +57,8 @@ export function Dialog({
         }
       }}
       className={cn(
-        'w-[calc(100%-2rem)] rounded-card border border-line bg-surface p-0 text-ink shadow-xl backdrop:bg-ink/45',
+        // Tailwind 4 preflight zeroes the UA `margin: auto` that centers modal dialogs.
+        'm-auto w-[calc(100%-2rem)] rounded-card border border-line bg-surface p-0 text-ink shadow-xl backdrop:bg-ink/45',
         sizes[size],
       )}
     >

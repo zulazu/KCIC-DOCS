@@ -11,6 +11,7 @@ import { Card, CardHeader, PageHeader } from '../../../shared/components/Surface
 import { useToast } from '../../../shared/components/Toast';
 import { useAuth } from '../../auth/AuthContext';
 import { listPermissions, listRoles, setRolePermissions } from '../api';
+import { RoleAssignmentsCard } from './RoleAssignmentsCard';
 
 export function RoleDetailPage() {
   const { roleId = '' } = useParams();
@@ -45,11 +46,16 @@ export function RoleDetailPage() {
   }
 
   return (
-    <PermissionEditor
-      key={role.id}
-      role={role}
-      permissions={permissionsQuery.data ?? []}
-    />
+    <>
+      <PermissionEditor
+        key={role.id}
+        role={role}
+        permissions={permissionsQuery.data ?? []}
+      />
+      <div className="mt-6">
+        <RoleAssignmentsCard role={role} />
+      </div>
+    </>
   );
 }
 

@@ -29,7 +29,7 @@ export function CardHeader({
   return (
     <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
       <div>
-        <h2 className="text-base font-semibold text-ink">{title}</h2>
+        <h2 className="text-[15px] font-bold text-ink">{title}</h2>
         {description ? (
           <p className="mt-0.5 text-[13px] leading-5 text-ink-secondary">{description}</p>
         ) : null}
@@ -53,11 +53,12 @@ export function PageHeader({
   return (
     <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-[26px] leading-8 font-bold tracking-tight text-ink sm:text-[28px] sm:leading-9">
+        <h1 className="font-display text-[30px] leading-9 font-bold tracking-tight text-ink sm:text-[34px] sm:leading-10">
           {title}
         </h1>
+        <span aria-hidden="true" className="mt-1.5 block h-[3px] w-12 rounded-full bg-gold" />
         {description ? (
-          <p className="mt-1 max-w-3xl text-sm text-ink-secondary">{description}</p>
+          <p className="mt-2 max-w-3xl text-sm text-ink-secondary">{description}</p>
         ) : null}
         {meta ? <div className="mt-2 flex flex-wrap items-center gap-2">{meta}</div> : null}
       </div>

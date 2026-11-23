@@ -220,6 +220,19 @@ Seed baseline role:
 
 Seed role bukan berarti seluruh user mendapat role tersebut. Assignment harus dibuat eksplisit dengan scope.
 
+Model role pilot (V19, keputusan pemilik produk 2026-11-23) menambahkan tiga role sistem
+tanpa menghapus baseline, sehingga assignment dan audit lama tetap valid:
+
+| Role | Cakupan |
+|---|---|
+| `ADMINISTRATOR` | Tata kelola penuh (governance) setara `SYSTEM_ADMIN`: akun, role, organisasi, master data, audit, operasional konten. Akses konten tetap tunduk pada ACL/ownership. |
+| `ADMIN` | Operasional dokumen dan workflow: repository, template, request (approve/fulfill), distribusi, audit. Tanpa `user.manage`, `role.manage`, `organization.manage`, `master_data.manage`, `employee.manage`. |
+| `PIC` | Penanggung jawab unit: kelola dokumen dan request dalam scope unit, distribusi, template. Tanpa governance dan tanpa `document.manage_access`/`archive`/`restore`. |
+| `EMPLOYEE` | Ditampilkan sebagai **User (Employee)**; permission baseline tidak berubah. |
+
+Routing request: approver unit diprioritaskan `UNIT_MANAGER` lalu `PIC`; administrator dokumen
+`DOCUMENT_ADMIN` lalu `ADMIN`; fallback governance `SYSTEM_ADMIN` lalu `ADMINISTRATOR`.
+
 ### 6.2 `authorization.permissions`
 
 Kolom: `id UUID PK`, `permission_code VARCHAR(120) UNIQUE NOT NULL`, `permission_name VARCHAR(160) NOT NULL`, `description TEXT`, `module_code VARCHAR(60) NOT NULL`, `created_at TIMESTAMPTZ NOT NULL`.
@@ -750,7 +763,7 @@ Urutan final harus mempertimbangkan FK silang yang benar-benar digunakan dan dip
 
 Seed awal yang layak:
 
-- Roles: `SYSTEM_ADMIN`, `DOCUMENT_ADMIN`, `UNIT_MANAGER`, `CONTRIBUTOR`, `EMPLOYEE`, `AUDITOR`.
+- Roles: `SYSTEM_ADMIN`, `DOCUMENT_ADMIN`, `UNIT_MANAGER`, `CONTRIBUTOR`, `EMPLOYEE`, `AUDITOR`; sejak V19 ditambah `ADMINISTRATOR`, `ADMIN`, `PIC` (§6.1).
 - Permission catalog sesuai module dan PRD.
 - Classifications: `INTERNAL`, `CONFIDENTIAL`, `RESTRICTED` (status provisional hingga disetujui).
 - Document types contoh sesuai daftar PRD, dapat dimodifikasi saat discovery.
@@ -867,6 +880,7 @@ Semantik: grant pada unit U dengan flag true berlaku untuk user yang active plac
 | V16 | `users.employee_id` nullable unique; re-assert `employee.*` permissions | Unique 1:1 untuk row terisi |
 | V17 | `include_descendants` flags | Default false; CHECK hanya unit scope |
 | V18 | `users.employee_id NOT NULL`, `organization_units.unit_type NOT NULL` | Setelah preflight data PASS |
+| V19 | Role pilot `ADMINISTRATOR`, `ADMIN`, `PIC`; rename tampilan `EMPLOYEE` → User (Employee) | Idempotent; baseline roles tetap; lihat §6.1 |
 
 ### 21.8 Schema acceptance untuk E-series
 

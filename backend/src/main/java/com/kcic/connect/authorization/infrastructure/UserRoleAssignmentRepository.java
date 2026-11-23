@@ -14,6 +14,8 @@ public interface UserRoleAssignmentRepository extends JpaRepository<UserRoleAssi
 
     List<UserRoleAssignment> findAllByUserIdOrderByCreatedAtDesc(UUID userId);
 
+    List<UserRoleAssignment> findAllByRoleIdOrderByCreatedAtDesc(UUID roleId);
+
     Optional<UserRoleAssignment> findByIdAndUserId(UUID id, UUID userId);
 
     @Query("""

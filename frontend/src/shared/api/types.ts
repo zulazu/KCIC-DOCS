@@ -68,6 +68,26 @@ export interface RoleAssignmentView {
   createdAt: string;
 }
 
+export interface RoleHolderView {
+  id: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  accountStatus: AccountStatus;
+  scopeType: ScopeType;
+  organizationUnitId: string | null;
+  organizationUnitCode: string | null;
+  organizationUnitName: string | null;
+  organizationUnitType: UnitType | null;
+  workspaceId: string | null;
+  workspaceName: string | null;
+  includeDescendants: boolean;
+  validFrom: string;
+  validUntil: string | null;
+  status: string;
+  createdAt: string;
+}
+
 export interface UnitMembershipView {
   id: string;
   organizationUnitId: string;

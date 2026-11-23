@@ -3,6 +3,7 @@ package com.kcic.connect.authorization.application;
 import com.kcic.connect.authorization.api.RoleDtos.AssignRoleRequest;
 import com.kcic.connect.authorization.api.RoleDtos.CreateRoleRequest;
 import com.kcic.connect.authorization.api.RoleDtos.PermissionResponse;
+import com.kcic.connect.authorization.api.RoleDtos.RoleHolderView;
 import com.kcic.connect.authorization.api.RoleDtos.RoleResponse;
 import com.kcic.connect.authorization.api.RoleDtos.UpdateRoleRequest;
 import com.kcic.connect.authorization.domain.Permission;
@@ -10,14 +11,21 @@ import com.kcic.connect.authorization.domain.PermissionCodes;
 import com.kcic.connect.authorization.domain.Role;
 import com.kcic.connect.authorization.domain.RoleStatus;
 import com.kcic.connect.authorization.domain.UserRoleAssignment;
+import com.kcic.connect.authorization.infrastructure.UserRoleAssignmentRepository;
 import com.kcic.connect.identity.api.UserDtos.RoleAssignmentView;
+import com.kcic.connect.identity.domain.User;
+import com.kcic.connect.identity.infrastructure.UserRepository;
+import com.kcic.connect.organization.domain.OrganizationUnit;
+import com.kcic.connect.organization.infrastructure.OrganizationUnitRepository;
 import com.kcic.connect.shared.api.ApiException;
 import com.kcic.connect.shared.api.ErrorCode;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -26,15 +34,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RoleAdminService {
 
-    private static final String SYSTEM_ADMIN_ROLE = "SYSTEM_ADMIN";
+    private static final java.util.Set<String> PROTECTED_GOVERNANCE_ROLES =
+            com.kcic.connect.authorization.domain.RoleCodes.GLOBAL_ADMIN_ROLES;
 
     private final AuthorizationService authorizationService;
-    private final com.kcic.connect.identity.infrastructure.UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final UserRoleAssignmentRepository assignmentRepository;
+    private final OrganizationUnitRepository organizationUnitRepository;
+    private final WorkspaceLookup workspaceLookup;
 
     public RoleAdminService(AuthorizationService authorizationService,
-                            com.kcic.connect.identity.infrastructure.UserRepository userRepository) {
+                            UserRepository userRepository,
+                            UserRoleAssignmentRepository assignmentRepository,
+                            OrganizationUnitRepository organizationUnitRepository,
+                            WorkspaceLookup workspaceLookup) {
         this.authorizationService = authorizationService;
         this.userRepository = userRepository;
+        this.assignmentRepository = assignmentRepository;
+        this.organizationUnitRepository = organizationUnitRepository;
+        this.workspaceLookup = workspaceLookup;
     }
 
     @Transactional(readOnly = true)
@@ -73,7 +91,7 @@ public class RoleAdminService {
         authorizationService.requireGlobalCapability(actor, PermissionCodes.ROLE_MANAGE);
         Role existing = authorizationService.getRole(roleId);
         RoleStatus status = parseStatus(request.status());
-        if (existing.getRoleCode().equals(SYSTEM_ADMIN_ROLE) && status != RoleStatus.ACTIVE) {
+        if (PROTECTED_GOVERNANCE_ROLES.contains(existing.getRoleCode()) && status != RoleStatus.ACTIVE) {
             throw new ApiException(ErrorCode.ACTION_FORBIDDEN, "Role sistem utama tidak dapat dinonaktifkan.");
         }
         Role role = authorizationService.updateRole(actor, roleId, request.roleName().trim(),
@@ -88,7 +106,7 @@ public class RoleAdminService {
     public RoleResponse setPermissions(UUID actor, UUID roleId, Set<UUID> permissionIds) {
         authorizationService.requireGlobalCapability(actor, PermissionCodes.ROLE_MANAGE);
         Role role = authorizationService.getRole(roleId);
-        if (role.getRoleCode().equals(SYSTEM_ADMIN_ROLE)) {
+        if (PROTECTED_GOVERNANCE_ROLES.contains(role.getRoleCode())) {
             throw new ApiException(ErrorCode.ACTION_FORBIDDEN,
                     "Permission role sistem utama dikelola oleh aplikasi dan tidak dapat diubah.");
         }
@@ -116,6 +134,43 @@ public class RoleAdminService {
                     assignment.getScopeType().name(), assignment.getOrganizationUnitId(),
                     assignment.getWorkspaceId(), assignment.isIncludeDescendants(), assignment.getValidFrom(),
                     assignment.getValidUntil(), assignment.getAssignmentStatus().name(), assignment.getCreatedAt());
+        }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RoleHolderView> roleAssignments(UUID actor, UUID roleId) {
+        authorizationService.requireGlobalCapability(actor, PermissionCodes.ROLE_MANAGE);
+        authorizationService.getRole(roleId);
+        List<UserRoleAssignment> assignments = assignmentRepository.findAllByRoleIdOrderByCreatedAtDesc(roleId);
+        Map<UUID, User> users = new HashMap<>();
+        userRepository.findAllById(assignments.stream().map(UserRoleAssignment::getUserId).distinct().toList())
+                .forEach(user -> users.put(user.getId(), user));
+        Map<UUID, OrganizationUnit> units = new HashMap<>();
+        organizationUnitRepository.findAllById(assignments.stream()
+                        .map(UserRoleAssignment::getOrganizationUnitId).filter(Objects::nonNull)
+                        .distinct().toList())
+                .forEach(unit -> units.put(unit.getId(), unit));
+        Map<UUID, String> workspaceNames = new HashMap<>();
+        assignments.stream().map(UserRoleAssignment::getWorkspaceId).filter(Objects::nonNull)
+                .distinct().forEach(workspaceId -> workspaceLookup.workspaceName(workspaceId)
+                        .ifPresent(name -> workspaceNames.put(workspaceId, name)));
+        return assignments.stream().map(assignment -> {
+            User user = users.get(assignment.getUserId());
+            OrganizationUnit unit = assignment.getOrganizationUnitId() == null
+                    ? null : units.get(assignment.getOrganizationUnitId());
+            return new RoleHolderView(
+                    assignment.getId(), assignment.getUserId(),
+                    user == null ? "UNKNOWN" : user.getUsername(),
+                    user == null ? "User tidak ditemukan" : user.getDisplayName(),
+                    user == null ? "INACTIVE" : user.getAccountStatus().name(),
+                    assignment.getScopeType().name(), assignment.getOrganizationUnitId(),
+                    unit == null ? null : unit.getUnitCode(),
+                    unit == null ? null : unit.getUnitName(),
+                    unit == null || unit.getUnitType() == null ? null : unit.getUnitType().name(),
+                    assignment.getWorkspaceId(),
+                    assignment.getWorkspaceId() == null ? null : workspaceNames.get(assignment.getWorkspaceId()),
+                    assignment.isIncludeDescendants(), assignment.getValidFrom(), assignment.getValidUntil(),
+                    assignment.getAssignmentStatus().name(), assignment.getCreatedAt());
         }).toList();
     }
 
@@ -150,15 +205,16 @@ public class RoleAdminService {
         if (assignment.getAssignmentStatus() != com.kcic.connect.authorization.domain.AssignmentStatus.ACTIVE) {
             return false;
         }
-        if (!authorizationService.getRole(assignment.getRoleId()).getRoleCode().equals(SYSTEM_ADMIN_ROLE)) {
+        if (!PROTECTED_GOVERNANCE_ROLES.contains(
+                authorizationService.getRole(assignment.getRoleId()).getRoleCode())) {
             return false;
         }
         long remaining = authorizationService.userAssignments(actor).stream()
                 .filter(item -> item.getAssignmentStatus()
                         == com.kcic.connect.authorization.domain.AssignmentStatus.ACTIVE)
                 .filter(item -> !item.getId().equals(assignment.getId()))
-                .filter(item -> authorizationService.getRole(item.getRoleId()).getRoleCode()
-                        .equals(SYSTEM_ADMIN_ROLE))
+                .filter(item -> PROTECTED_GOVERNANCE_ROLES.contains(
+                        authorizationService.getRole(item.getRoleId()).getRoleCode()))
                 .count();
         return remaining == 0;
     }

@@ -6,7 +6,7 @@ import { LoadingBlock } from '../../shared/components/Feedback';
 import { Icon } from '../../shared/components/Icon';
 import { cn } from '../../shared/utils/cn';
 import { initials } from '../../shared/utils/format';
-import { activeNavLabel } from '../navigation';
+import { activeNavLabel, navTrail } from '../navigation';
 import { DesktopSidebar, MobileDrawer } from './Sidebar';
 
 const STORAGE_KEY = 'kcic.sidebar.collapsed';
@@ -80,12 +80,35 @@ export function AppShell() {
                     KCIC Connect
                   </Link>
                 </li>
-                <li aria-hidden="true" className="hidden text-ink-disabled sm:block">
-                  /
-                </li>
-                <li aria-current="page" className="truncate font-semibold text-ink">
-                  {activeNavLabel(location.pathname)}
-                </li>
+                {(() => {
+                  const trail = navTrail(location.pathname);
+                  const crumbs =
+                    trail.length > 0
+                      ? trail
+                      : [{ label: activeNavLabel(location.pathname), to: location.pathname }];
+                  return crumbs.map((crumb, index) => {
+                    const last = index === crumbs.length - 1;
+                    return (
+                      <li key={crumb.to} className="flex min-w-0 items-center gap-1.5">
+                        <span aria-hidden="true" className="hidden text-ink-disabled sm:block">
+                          /
+                        </span>
+                        {last ? (
+                          <span aria-current="page" className="truncate font-semibold text-ink">
+                            {crumb.label}
+                          </span>
+                        ) : (
+                          <Link
+                            to={crumb.to}
+                            className="hidden truncate text-ink-secondary hover:text-primary sm:block"
+                          >
+                            {crumb.label}
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  });
+                })()}
               </ol>
             </nav>
           </div>
@@ -93,7 +116,11 @@ export function AppShell() {
           <div className="flex shrink-0 items-center gap-2">
             <NotificationBell />
             <div className="hidden h-6 w-px bg-line sm:block" aria-hidden="true" />
-            <div className="flex items-center gap-2">
+            <Link
+              to="/profile"
+              title="Lihat profil saya"
+              className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-surface-muted"
+            >
               <span
                 className="flex size-8 items-center justify-center rounded-full bg-primary-subtle text-xs font-bold text-primary"
                 aria-hidden="true"
@@ -108,7 +135,8 @@ export function AppShell() {
                   {me.username}
                 </span>
               </span>
-            </div>
+              <span className="sr-only sm:hidden">Lihat profil saya</span>
+            </Link>
             <button
               type="button"
               onClick={() => void handleLogout()}
@@ -122,13 +150,13 @@ export function AppShell() {
           </div>
         </header>
 
-        <main id="main-content" className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-6 lg:px-8 lg:py-8">
+        <main id="main-content" className="w-full flex-1 px-4 py-6 lg:px-8 lg:py-8 2xl:px-12">
           <Suspense fallback={<LoadingBlock label="Memuat halaman…" />}>
             <Outlet />
           </Suspense>
         </main>
 
-        <footer className="mx-auto w-full max-w-[1440px] px-4 pb-5 text-[11px] text-ink-secondary lg:px-8">
+        <footer className="w-full px-4 pb-5 text-[11px] text-ink-secondary lg:px-8 2xl:px-12">
           <span>KCIC Connect — pilot internal</span>
         </footer>
       </div>

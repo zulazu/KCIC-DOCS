@@ -1,5 +1,5 @@
 import { apiRequest } from '../../shared/api/client';
-import type { MeResponse } from '../../shared/api/types';
+import type { EmployeeDetail, MeResponse } from '../../shared/api/types';
 
 export interface LoginPayload {
   username: string;
@@ -29,4 +29,8 @@ export function changePassword(payload: ChangePasswordPayload): Promise<void> {
     method: 'POST',
     body: payload,
   });
+}
+
+export function fetchMyEmployee(): Promise<EmployeeDetail> {
+  return apiRequest<EmployeeDetail>('/api/v1/me/employee');
 }

@@ -33,4 +33,11 @@ public class JdbcWorkspaceLookup implements WorkspaceLookup {
                         (rs, rowNum) -> rs.getObject("owner_organization_unit_id", UUID.class), workspaceId)
                 .stream().findFirst();
     }
+
+    @Override
+    public Optional<String> workspaceName(UUID workspaceId) {
+        return jdbcTemplate.query("select workspace_name from repository.workspaces where id = ?",
+                        (rs, rowNum) -> rs.getString("workspace_name"), workspaceId)
+                .stream().findFirst();
+    }
 }

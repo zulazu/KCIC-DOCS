@@ -25,9 +25,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestRoutingService {
 
-    private static final String UNIT_MANAGER = "UNIT_MANAGER";
-    private static final String DOCUMENT_ADMIN = "DOCUMENT_ADMIN";
-    private static final String SYSTEM_ADMIN = "SYSTEM_ADMIN";
+    private static final List<String> UNIT_APPROVER_ROLES =
+            com.kcic.connect.authorization.domain.RoleCodes.UNIT_APPROVER_ROUTING;
+    private static final List<String> DOCUMENT_ADMIN_ROLES =
+            com.kcic.connect.authorization.domain.RoleCodes.DOCUMENT_ADMIN_ROUTING;
+    private static final List<String> GOVERNANCE_ROLES = List.of(
+            com.kcic.connect.authorization.domain.RoleCodes.SYSTEM_ADMIN,
+            com.kcic.connect.authorization.domain.RoleCodes.ADMINISTRATOR);
 
     private final DocumentService documentService;
     private final AuthorizationService authorizationService;
@@ -66,21 +70,34 @@ public class RequestRoutingService {
             return new Routing(document, unitId, ownerUserId, ownerUserId);
         }
         if (unitId != null) {
-            UUID manager = firstActive(authorizationService.activeUserIdsWithRole(UNIT_MANAGER,
-                    ScopeType.ORGANIZATION_UNIT, unitId));
-            if (manager != null) {
-                return new Routing(document, unitId, ownerUserId, manager);
+            for (String roleCode : UNIT_APPROVER_ROLES) {
+                UUID manager = firstActive(authorizationService.activeUserIdsWithRole(roleCode,
+                        ScopeType.ORGANIZATION_UNIT, unitId));
+                if (manager != null) {
+                    return new Routing(document, unitId, ownerUserId, manager);
+                }
             }
         }
-        UUID documentAdmin = firstActive(authorizationService.activeUserIdsWithRole(DOCUMENT_ADMIN,
-                ScopeType.GLOBAL, null));
-        if (documentAdmin == null && unitId != null) {
-            documentAdmin = firstActive(authorizationService.activeUserIdsWithRole(DOCUMENT_ADMIN,
-                    ScopeType.ORGANIZATION_UNIT, unitId));
+        UUID documentAdmin = null;
+        for (String roleCode : DOCUMENT_ADMIN_ROLES) {
+            documentAdmin = firstActive(authorizationService.activeUserIdsWithRole(roleCode,
+                    ScopeType.GLOBAL, null));
+            if (documentAdmin == null && unitId != null) {
+                documentAdmin = firstActive(authorizationService.activeUserIdsWithRole(roleCode,
+                        ScopeType.ORGANIZATION_UNIT, unitId));
+            }
+            if (documentAdmin != null) {
+                break;
+            }
         }
         if (documentAdmin == null) {
-            documentAdmin = firstActive(authorizationService.activeUserIdsWithRole(SYSTEM_ADMIN,
-                    ScopeType.GLOBAL, null));
+            for (String roleCode : GOVERNANCE_ROLES) {
+                documentAdmin = firstActive(authorizationService.activeUserIdsWithRole(roleCode,
+                        ScopeType.GLOBAL, null));
+                if (documentAdmin != null) {
+                    break;
+                }
+            }
         }
         if (documentAdmin == null) {
             throw ApiException.conflict("Belum ada approver aktif untuk request " + requestType

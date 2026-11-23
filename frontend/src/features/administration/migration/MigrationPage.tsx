@@ -9,13 +9,13 @@ import { listEmployees, listUnlinkedAccounts } from '../api';
 
 function StatTile({ label, value, tone }: { label: string; value: string; tone?: 'warning' }) {
   return (
-    <div className="rounded-xl border border-line bg-surface px-4 py-3">
-      <p className="text-xs font-semibold tracking-wide text-ink-secondary uppercase">{label}</p>
+    <div className="tile-hover rounded-card border border-line bg-surface p-4 shadow-card">
+      <p className="text-xs font-semibold tracking-[0.06em] text-ink-secondary uppercase">{label}</p>
       <p
         className={
           tone === 'warning'
-            ? 'mt-1 text-2xl font-semibold text-warning'
-            : 'mt-1 text-2xl font-semibold text-ink'
+            ? 'font-display mt-1 text-[28px] leading-9 font-bold text-warning tabular-nums'
+            : 'font-display mt-1 text-[28px] leading-9 font-bold text-ink tabular-nums'
         }
       >
         {value}
