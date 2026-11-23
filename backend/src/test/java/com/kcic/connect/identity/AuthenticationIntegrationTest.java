@@ -137,6 +137,26 @@ class AuthenticationIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    void selfPasswordChangeInvalidatesOtherSessionsButKeepsCurrent() throws Exception {
+        String username = uniqueName("selfchange");
+        createUser(username, "Old!Pass2026", false, null);
+        Client first = newClient();
+        first.login(username, "Old!Pass2026");
+        Client second = newClient();
+        second.login(username, "Old!Pass2026");
+
+        first.changePassword("Old!Pass2026", "New!Pass2026");
+
+        first.perform(get("/api/v1/auth/me")).andExpect(status().isOk());
+        second.perform(get("/api/v1/auth/me")).andExpect(status().isUnauthorized());
+
+        Client relogin = newClient();
+        relogin.attemptLogin(username, "Old!Pass2026")
+                .andExpect(status().isUnauthorized());
+        relogin.login(username, "New!Pass2026");
+    }
+
+    @Test
     void requestWithoutCsrfTokenIsRejected() throws Exception {
         String username = uniqueName("csrf");
         createUser(username, "Csrf!Pass2026", false, null);

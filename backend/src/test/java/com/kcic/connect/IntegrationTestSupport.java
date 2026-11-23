@@ -29,11 +29,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public abstract class IntegrationTestSupport {
 
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
+    // Opt-in local PostgreSQL for Docker-less environments: set KCIC_TEST_DB_URL
+    // (plus KCIC_TEST_DB_USER/KCIC_TEST_DB_PASSWORD) to a dedicated test database.
+    static final String LOCAL_DB_URL = System.getenv("KCIC_TEST_DB_URL");
+    static final PostgreSQLContainer<?> POSTGRES =
+            LOCAL_DB_URL == null ? new PostgreSQLContainer<>("postgres:16-alpine") : null;
     static final String STORAGE_ROOT;
 
     static {
-        POSTGRES.start();
+        if (POSTGRES != null) {
+            POSTGRES.start();
+        }
         try {
             STORAGE_ROOT = java.nio.file.Files.createTempDirectory("kcic-test-storage").toString();
         } catch (java.io.IOException ex) {
@@ -43,9 +49,17 @@ public abstract class IntegrationTestSupport {
 
     @DynamicPropertySource
     static void datasource(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        if (LOCAL_DB_URL != null) {
+            registry.add("spring.datasource.url", () -> LOCAL_DB_URL);
+            registry.add("spring.datasource.username",
+                    () -> System.getenv().getOrDefault("KCIC_TEST_DB_USER", "postgres"));
+            registry.add("spring.datasource.password",
+                    () -> System.getenv().getOrDefault("KCIC_TEST_DB_PASSWORD", ""));
+        } else {
+            registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+            registry.add("spring.datasource.username", POSTGRES::getUsername);
+            registry.add("spring.datasource.password", POSTGRES::getPassword);
+        }
         registry.add("kcic.storage.provider", () -> "filesystem");
         registry.add("kcic.storage.local-root", () -> STORAGE_ROOT);
     }

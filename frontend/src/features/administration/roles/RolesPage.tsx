@@ -261,17 +261,11 @@ export function RolesPage() {
           <SelectField
             label="Status"
             required
-            disabled={editingRole?.roleCode === 'SYSTEM_ADMIN'}
             {...editForm.register('status')}
           >
             <option value="ACTIVE">Aktif</option>
             <option value="INACTIVE">Nonaktif</option>
           </SelectField>
-          {editingRole?.roleCode === 'SYSTEM_ADMIN' ? (
-            <p className="text-xs text-ink-secondary">
-              Status role sistem tidak dapat dinonaktifkan dari antarmuka.
-            </p>
-          ) : null}
           <p className="text-xs text-ink-secondary">
             Role nonaktif tetap tersimpan pada histori penugasan tetapi tidak memberi capability
             baru.

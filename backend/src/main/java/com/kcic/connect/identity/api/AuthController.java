@@ -57,8 +57,9 @@ public class AuthController {
     @PostMapping("/change-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@AuthenticationPrincipal UserPrincipal principal,
-                               @Valid @RequestBody ChangePasswordRequest request) {
-        authenticationService.changePassword(requirePrincipal(principal), request);
+                               @Valid @RequestBody ChangePasswordRequest request,
+                               HttpServletRequest httpRequest) {
+        authenticationService.changePassword(requirePrincipal(principal), request, httpRequest);
     }
 
     private UserPrincipal requirePrincipal(UserPrincipal principal) {

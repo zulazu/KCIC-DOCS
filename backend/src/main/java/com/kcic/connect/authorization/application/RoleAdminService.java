@@ -89,11 +89,7 @@ public class RoleAdminService {
     @Transactional
     public RoleResponse updateRole(UUID actor, UUID roleId, UpdateRoleRequest request) {
         authorizationService.requireGlobalCapability(actor, PermissionCodes.ROLE_MANAGE);
-        Role existing = authorizationService.getRole(roleId);
         RoleStatus status = parseStatus(request.status());
-        if (PROTECTED_GOVERNANCE_ROLES.contains(existing.getRoleCode()) && status != RoleStatus.ACTIVE) {
-            throw new ApiException(ErrorCode.ACTION_FORBIDDEN, "Role sistem utama tidak dapat dinonaktifkan.");
-        }
         Role role = authorizationService.updateRole(actor, roleId, request.roleName().trim(),
                 request.description(), status);
         Set<String> codes = new HashSet<>();
@@ -106,10 +102,6 @@ public class RoleAdminService {
     public RoleResponse setPermissions(UUID actor, UUID roleId, Set<UUID> permissionIds) {
         authorizationService.requireGlobalCapability(actor, PermissionCodes.ROLE_MANAGE);
         Role role = authorizationService.getRole(roleId);
-        if (PROTECTED_GOVERNANCE_ROLES.contains(role.getRoleCode())) {
-            throw new ApiException(ErrorCode.ACTION_FORBIDDEN,
-                    "Permission role sistem utama dikelola oleh aplikasi dan tidak dapat diubah.");
-        }
         authorizationService.setRolePermissions(actor, roleId, permissionIds);
         Set<String> codes = new HashSet<>();
         authorizationService.rolePermissions(roleId)

@@ -854,3 +854,53 @@ Verification (2026-11-23): run pertama SELESAI dengan ringkasan 8 unit / 6 emplo
 Keluhan pemilik produk: semua dialog/pop-up menempel di kiri-atas, tidak center (contoh: "Kirim distribusi"). Akar masalah: preflight Tailwind 4 me-reset margin seluruh elemen ke 0, menghapus `margin: auto` bawaan UA yang memusatkan `<dialog>` modal. Fix satu titik di primitif bersama `shared/components/Dialog.tsx`: tambah `m-auto` pada kelas dialog — berlaku untuk semua pop-up (Dialog sm/md/lg dan ConfirmDialog) di seluruh fitur. Drawer navigasi mobile (`Sidebar.tsx`) sudah eksplisit `m-0` sehingga tidak terdampak.
 
 Verification (2026-11-23): browser live 1440×900 — dialog "Kirim distribusi" (lg) center sempurna (offset X/Y = 0, muat di viewport, `.local/ui-evidence/dialog-centered-distribusi.png`); 390×844 — center sempurna (`dialog-centered-mobile.png`); ConfirmDialog "Cabut assignment role" (sm) center (offset −8px horizontal = setengah lebar scrollbar halaman, perilaku centering native terhadap area terlihat); drawer mobile tetap rata kiri 0,0 280×844; data tidak berubah (Batal). Gates: tsc PASS, lint 0 errors (9 warning lama), vitest 35/35, build PASS.
+
+### 2026-11-23 — Buka proteksi role sistem (edit permission + status)
+
+Permintaan pemilik produk: "buka perlindungan role sistem". Perubahan (DEC-073):
+
+- Backend `RoleAdminService`: lock `setPermissions` (403 "Permission role sistem utama dikelola oleh aplikasi…") dan lock `updateRole` (403 "Role sistem utama tidak dapat dinonaktifkan.") dihapus. Permission dan status seluruh role sistem — termasuk SYSTEM_ADMIN dan ADMINISTRATOR — kini dapat diubah melalui API.
+- Frontend `RoleDetailPage`: editor permission tidak lagi terkunci untuk role sistem (checkbox, pilih-semua-modul, Kembalikan, Simpan aktif); alert peringatan diganti alert info "Role sistem dapat dikelola" dengan pengingat menjaga minimal satu administrator aktif. Badge "Role sistem" tetap sebagai penanda informasi.
+- Frontend `RolesPage`: select status pada dialog "Ubah role" tidak lagi disabled untuk SYSTEM_ADMIN.
+- Guard yang dipertahankan (anti-lockout, bukan proteksi edit): administrator terakhir tetap tidak dapat mencabut assignment governance milik sendiri (403). Desain governance konten tidak berubah: assignment global SYSTEM_ADMIN/ADMINISTRATOR tetap tidak memberi capability konten (DEC-070).
+- Test baru `RoleAdminServiceSystemRoleTest` (4 test): edit permission role sistem sukses, deaktivasi role sistem sukses, self-revoke admin terakhir diblokir, self-revoke allowed bila masih ada assignment governance lain.
+
+Verification (2026-11-23): unit test backend `RoleAdminServiceSystemRoleTest` + `RoleAdminServiceRoleAssignmentsTest` PASS; tsc PASS; lint 0 errors (9 warning lama); vitest 35/35; build frontend PASS. Live API sebagai admin: PUT permission SYSTEM_ADMIN tanpa `template.view` → 200 (sebelumnya 403), kode hilang dari response; restore set semula → 200, 40 permission identik dengan kondisi awal. Browser live: halaman detail SYSTEM_ADMIN menampilkan 51 checkbox aktif (0 disabled) + alert info; siklus UI penuh uncheck `template.view` → Simpan → header "39 dari 40 permission" → recheck → Simpan → "40 dari 40 permission" (state kembali persis); dialog "Ubah role" SYSTEM_ADMIN menampilkan select status aktif (ACTIVE), ditutup tanpa perubahan (`.local/ui-evidence/role-system-unlocked.png`).
+
+Residual risk: administrator kini dapat mencabut permission manajemen role dari role governance atau menonaktifkannya; kesalahan konfigurasi dapat menghilangkan akses administrasi. Guard self-revoke admin terakhir tetap mencegah lockout via pencabutan assignment, tetapi tidak mencegah salah edit permission/status — alert info di UI memperingatkan hal ini.
+
+### 2026-11-23 — Audit keamanan menyeluruh (code-security) + fix temuan
+
+Audit penuh terhadap backend dan frontend mengikuti kategori OWASP (SQLi, command injection, XSS, XXE, path traversal, deserialisasi, secrets, crypto, transport, SSRF, CSRF, race condition).
+
+Area yang diperiksa dan dinyatakan bersih (bukti baca kode/grep, bukan asumsi):
+
+- SQL: seluruh query JDBC parameterized (`?`); tidak ada string concatenation input pengguna; JPA/Hibernate untuk sisanya.
+- Command injection / deserialisasi / XXE: tidak ada `Runtime`/`ProcessBuilder`/`ObjectInputStream`/parser XML pada kode aplikasi.
+- SSRF: backend tidak pernah melakukan fetch URL eksternal; tautan Office hanya dicatat (parseHttpsUrl: wajib https, host valid, tanpa userInfo).
+- XSS: tidak ada `dangerouslySetInnerHTML`/`innerHTML`/`eval`; allowlist file menolak html/svg sehingga tidak ada stored XSS via preview inline; endpoint konten memakai `X-Content-Type-Options: nosniff` + `Cache-Control: private, no-store`.
+- Path traversal: FilesystemStorageAdapter normalize + startsWith(root); object key dibuat backend (UUID), bukan nama file asli; sanitizeFilename membuang path/control char.
+- Secrets: tidak ada credential hardcode di kode utama; konfigurasi via environment; `.env` gitignored; log tidak memuat password/token/signed URL (BootstrapAdminInitializer hanya mencatat panjang password).
+- AuthN/AuthZ: BCrypt(12); login timing-safe (dummy hash untuk user tak dikenal); lockout 5 gagal/15 menit; proteksi session fixation (invalidate+recreate saat login); AccountStateFilter memvalidasi ulang akun tiap request dan menegakkan mustChangePassword di backend; default deny + scope + ACL + explicit deny di backend; IDOR teruji (AclIntegrationTest, AuthorizationIntegrationTest).
+- CSRF: CookieCsrfTokenRepository + header SPA, retry otomatis di client saat token basi; request tanpa token ditolak (test eksplisit).
+- Error contract: GlobalExceptionHandler tidak membocorkan stacktrace/SQL/path; `server.error.include-message/stacktrace=never`; actuator hanya health,info.
+- Frontend: tidak ada penyimpanan token di localStorage (hanya flag sidebar); external link dibuka `noopener,noreferrer`.
+
+Temuan dan fix (keduanya diimplementasikan, bukan sekadar laporan):
+
+1. MEDIUM — Ganti password mandiri tidak menginvalidasi sesi lain. Reset password admin sudah menginvalidasi seluruh sesi target, tetapi `AuthenticationService.changePassword` membiarkan sesi lain tetap hidup — sesi yang dicuri tetap valid setelah korban mengganti password. Fix: `changePassword` menerima `HttpServletRequest`, lalu `invalidateOtherSessions(username, currentSessionId)` menghapus semua sesi Spring Session JDBC milik user kecuali sesi yang sedang dipakai (sesi pemohon tetap hidup, UX tidak berubah). `AuthController` meneruskan request.
+2. LOW — Label provider tautan eksternal memakai `host.endsWith("sharepoint.com")` sehingga host penipu seperti `evilsharepoint.com` dilabeli SHAREPOINT (kosmetik; tidak ada dampak authorization karena backend tidak pernah fetch URL). Fix: `matchesDomain(host, domain)` dengan batas titik (`host.equals(domain) || host.endsWith("." + domain)`); `docs.google.com` tetap exact-match.
+
+Infrastruktur test: Docker tidak lagi tersedia di lingkungan dev, sehingga `IntegrationTestSupport` mendapat fallback opt-in PostgreSQL lokal via `KCIC_TEST_DB_URL`/`KCIC_TEST_DB_USER`/`KCIC_TEST_DB_PASSWORD` (default tetap Testcontainers bila env tidak di-set). Database test khusus `kcic_connect_test` dibuat terpisah dari DB dev; Flyway menerapkan 19 migrasi dari kosong saat test berjalan. Ini juga menyelesaikan strategi integration-test tanpa Docker untuk task #55.
+
+Test baru: `AuthenticationIntegrationTest.selfPasswordChangeInvalidatesOtherSessionsButKeepsCurrent` (dua client login user sama; ganti password di A; `/auth/me` A=200, B=401; password lama ditolak, password baru diterima) dan `DocumentVersionServiceProviderCodeTest` (2 test: domain/subdomain sah terlabel benar; host lookalike — evilsharepoint.com, sharepoint.com.attacker.net, fake1drv.ms, docs.google.com.evil.io — semuanya EXTERNAL). `providerCode` diubah dari private menjadi package-private agar dapat diuji langsung tanpa membocorkannya ke API.
+
+Verification (2026-11-23): full suite backend terhadap PostgreSQL lokal — 101 test, 0 failure, 0 error, BUILD SUCCESS (mencakup seluruh integration test authorization/ACL/IDOR/expiry/revoke yang sebelumnya BLOCKED tanpa Docker). Verifikasi live terhadap backend berjalan: user uji sementara dua sesi → ganti password di sesi A (204) → sesi A tetap 200, sesi B langsung 401; kedua user uji dinonaktifkan setelah verifikasi (non-destruktif). Frontend tidak berubah pada batch ini.
+
+Residual risk tingkat deployment (bukan defect kode; dicatat untuk UAT/deployment):
+
+- CSP belum dipasang di lapisan static host/reverse proxy — direkomendasikan saat deployment produksi.
+- `KCIC_COOKIE_SECURE` default false untuk dev HTTP; wajib true di produksi HTTPS.
+- Belum ada rate limiting per-IP di lapisan gateway (lockout akun per-username sudah ada); brute-force tersebar lintas akun dimitigasi di gateway saat produksi.
+- Kebijakan password berbasis panjang (min 12) tanpa daftar password bocor; dapat diperkuat pasca-pilot.
+- Antivirus/malware scanning di luar scope pilot (keputusan terkunci); validasi ekstensi/MIME/magic-byte bukan pengganti malware scanning — jangan melabeli file "aman dari malware".

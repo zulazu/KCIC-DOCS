@@ -161,7 +161,8 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void changePassword(UserPrincipal principal, ChangePasswordRequest request) {
+    public void changePassword(UserPrincipal principal, ChangePasswordRequest request,
+                               HttpServletRequest httpRequest) {
         User user = userRepository.findById(principal.userId())
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHENTICATED, "Sesi tidak valid."));
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
@@ -184,6 +185,8 @@ public class AuthenticationService {
         }
         user.changePassword(passwordEncoder.encode(newPassword), false, user.getId(), Instant.now(clock));
         userRepository.save(user);
+        HttpSession current = httpRequest.getSession(false);
+        invalidateOtherSessions(user.getUsername(), current == null ? null : current.getId());
         auditService.record(user.getId(), "PASSWORD_CHANGED", "USER", user.getId(), "SUCCESS", Map.of());
     }
 
@@ -197,6 +200,13 @@ public class AuthenticationService {
     public void invalidateSessionsFor(String username) {
         Map<String, ? extends Session> sessions = sessionRepository.findByPrincipalName(username);
         sessions.keySet().forEach(sessionRepository::deleteById);
+    }
+
+    private void invalidateOtherSessions(String username, String currentSessionId) {
+        Map<String, ? extends Session> sessions = sessionRepository.findByPrincipalName(username);
+        sessions.keySet().stream()
+                .filter(sessionId -> !sessionId.equals(currentSessionId))
+                .forEach(sessionRepository::deleteById);
     }
 
     private MeResponse toMe(User user) {

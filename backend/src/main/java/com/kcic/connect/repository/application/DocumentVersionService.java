@@ -382,20 +382,24 @@ public class DocumentVersionService {
         }
     }
 
-    private static String providerCode(String host) {
-        if (host.endsWith("sharepoint.com")) {
+    static String providerCode(String host) {
+        if (matchesDomain(host, "sharepoint.com")) {
             return "SHAREPOINT";
         }
-        if (host.endsWith("onedrive.live.com") || host.endsWith("1drv.ms")) {
+        if (matchesDomain(host, "onedrive.live.com") || matchesDomain(host, "1drv.ms")) {
             return "ONEDRIVE";
         }
-        if (host.equals("docs.google.com") || host.endsWith("drive.google.com")) {
+        if (host.equals("docs.google.com") || matchesDomain(host, "drive.google.com")) {
             return "GOOGLE_DRIVE";
         }
-        if (host.endsWith("office.com") || host.endsWith("officeapps.live.com")) {
+        if (matchesDomain(host, "office.com") || matchesDomain(host, "officeapps.live.com")) {
             return "OFFICE";
         }
         return "EXTERNAL";
+    }
+
+    private static boolean matchesDomain(String host, String domain) {
+        return host.equals(domain) || host.endsWith("." + domain);
     }
 
     private static String normalizedContentType(String contentType) {

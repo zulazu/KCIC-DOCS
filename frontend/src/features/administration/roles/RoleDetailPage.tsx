@@ -93,12 +93,7 @@ function PermissionEditor({ role, permissions }: { role: Role; permissions: Perm
     onError: (error) => setActionError(apiMessage(error)),
   });
 
-  const locked = role.systemRole;
-
   const toggle = (code: string) => {
-    if (locked) {
-      return;
-    }
     setSelected((current) => {
       const next = new Set(current);
       if (next.has(code)) {
@@ -111,9 +106,6 @@ function PermissionEditor({ role, permissions }: { role: Role; permissions: Perm
   };
 
   const toggleModule = (modulePermissions: Permission[], checked: boolean) => {
-    if (locked) {
-      return;
-    }
     setSelected((current) => {
       const next = new Set(current);
       for (const permission of modulePermissions) {
@@ -157,11 +149,12 @@ function PermissionEditor({ role, permissions }: { role: Role; permissions: Perm
         }
       />
 
-      {locked ? (
+      {role.systemRole ? (
         <div className="mb-4">
-          <Alert tone="warning" title="Role sistem dilindungi">
-            Permission role sistem dikunci untuk mencegah administrator mencabut akses
-            fundamental secara tidak sengaja.
+          <Alert tone="info" title="Role sistem dapat dikelola">
+            Perubahan permission maupun status role sistem langsung berlaku bagi seluruh
+            pemegang role. Pastikan minimal satu administrator aktif tetap memiliki akses
+            manajemen role sebelum mencabut permission atau menonaktifkan role.
           </Alert>
         </div>
       ) : null}
@@ -190,7 +183,6 @@ function PermissionEditor({ role, permissions }: { role: Role; permissions: Perm
                     <input
                       type="checkbox"
                       checked={allChecked}
-                      disabled={locked}
                       onChange={(event) => toggleModule(modulePermissions, event.target.checked)}
                       className="size-4 accent-primary"
                     />
@@ -212,7 +204,6 @@ function PermissionEditor({ role, permissions }: { role: Role; permissions: Perm
                         <input
                           type="checkbox"
                           checked={checked}
-                          disabled={locked}
                           onChange={() => toggle(permission.permissionCode)}
                           className="mt-0.5 size-4 accent-primary"
                         />
@@ -244,14 +235,14 @@ function PermissionEditor({ role, permissions }: { role: Role; permissions: Perm
           <div className="flex gap-2">
             <Button
               variant="secondary"
-              disabled={!dirty || locked}
+              disabled={!dirty}
               onClick={() => setSelected(new Set(role.permissions))}
             >
               Kembalikan
             </Button>
             <Button
               loading={saveMutation.isPending}
-              disabled={!dirty || locked}
+              disabled={!dirty}
               onClick={() => saveMutation.mutate()}
             >
               Simpan permission
